@@ -1,82 +1,81 @@
-# GitHub Stats (gh-stats)
+# Dr. DevLove 
+### *or: How I Learned to Stop Analysis Paralysis and Love Writing Massive Amounts of Code*
 
-一个强大且美观的命令行工具，用于统计 GitHub 贡献数据。支持个人仓库及组织仓库，直接通过 GitHub API 获取数据，无需本地克隆代码。
+[![GitHub license](https://img.shields.io/github/license/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code)](https://github.com/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code)](https://github.com/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code/stargazers)
 
-## 🌟 特性
+> "Gentlemen, you can't fight in here! This is the War Room!" — *Dr. Strangelove*
+>
+> "Developers, you can't overthink in here! This is the IDE!" — *Dr. DevLove*
 
-- **精准统计**：基于 GitHub Commits API，准确统计指定时间范围内的提交数及代码行数变化。
-- **美观输出**：内置彩色表格展示，实时进度条反馈。
-- **零代码克隆**：直接调用 `gh` CLI，无需将仓库克隆到本地。
-- **智能过滤**：
-    - 支持按个人/组织维度过滤。
-    - 自动按最近活跃时间（Pushed at）排序，优先扫描最近工作的项目。
-    - 可分别设置个人和组织的扫描仓库上限（Limit），在大规模组织中也能快速得到结果。
-- **灵活的时间范围**：支持 `today`, `week`, `month`, `quarter`, `year` 简写，或自定义 `--since`/`--until` 日期。
+Are you tired of staring at a blank cursor? Do you suffer from chronic *Analysis Paralysis*? Do you spend more time planning your code than actually writing it?
 
-## 🛠️ 环境要求
+**Dr. DevLove** (alias `gh-stats`) is your prescription. It's a CLI tool that proves you *are* getting work done. It validates your existence by tracking your daily code contributions across the GitHub universe, bypassing the need for local clones because who has disk space for that?
 
-1. **Python 3.9+**
-2. **GitHub CLI (`gh`)**: 必须安装并登录。
-    - 安装：`brew install gh`
-    - 登录：`gh auth login`
-    - *建议对组织仓库进行 SSO 授权*：`gh auth refresh -s read:org`
+---
 
-## 🚀 快速开始
+[🇨🇳 中文](./README.zh-CN.md) | [🇪🇸 Español](./README.es.md) | [🇫🇷 Français](./README.fr.md) | [🇸🇦 العربية](./README.ar.md) | [🇮🇳 हिन्दी](./README.hi.md)
 
-### 安装
+---
 
-本项目使用 [Poetry](https://python-poetry.org/) 进行管理。
+## 💊 The Prescription (Features)
+
+*   **Remote Diagnostics**: Scans your GitHub activity directly via API. No local repositories required.
+*   **Vital Signs**: Beautiful, colored terminal output with progress bars that spin faster than your imposter syndrome.
+*   **Scalable Treatment**: Works for personal projects and massive organizations alike.
+*   **Time Travel**: Check your stats for `today`, `this week`, `this month`, or `this year`.
+*   **Triage Mode**: Automatically sorts repositories by last push date, so you see your most recent "saves" first.
+
+## 📥 Intake (Installation)
+
+Dr. DevLove requires Python 3.9+ and the GitHub CLI (`gh`).
+
+### 1. Install Dependencies
+```bash
+brew install gh
+gh auth login
+# For organizational access (REQUIRED for proper diagnosis):
+gh auth refresh -s read:org
+```
+
+### 2. Take the Medicine
+Clone this massive repository and install with Poetry:
 
 ```bash
-# 安装依赖并创建环境
+git clone https://github.com/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code.git
+cd Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code
 poetry install
-
-# 使用 poetry 运行
-poetry run gh-stats --range week
 ```
 
-### 常用命令示例
+## 📋 Dosage (Usage)
+
+Run the tool to see your stats. Side effects may include a sudden sense of accomplishment.
 
 ```bash
-# 查看本周统计（包含个人项目和默认组织限制）
-gh-stats --range week
+# Verify you did something today
+poetry run gh-stats --range today
 
-# 查看本月某个组织的统计，最近活跃的 30 个仓库
-gh-stats --range month --orgs SH-SE --org-limit 30
+# Prove to your boss you worked this month
+poetry run gh-stats --range month --orgs YOUR_COMPANY_ORG
 
-# 只看个人项目，最近活跃的 10 个仓库
-gh-stats --range today --no-personal --personal-limit 10
-
-# 自定义日期范围
-gh-stats --since 2023-12-01 --until 2023-12-31
+# The "I'm a 10x Engineer" view (Personal repos only, top 10)
+poetry run gh-stats --range year --no-personal --personal-limit 10
 ```
 
-## ⚙️ 参数说明
+### Parameters
 
-| 参数 | 说明 | 默认值 |
+| Flag | Effect | Default |
 | :--- | :--- | :--- |
-| `--personal` / `--no-personal` | 是否包含个人仓库 | `True` |
-| `--orgs` | 需要统计的组织名称（逗号分隔） | `""` |
-| `--since` | 开始日期 (YYYY-MM-DD) | 今天 |
-| `--until` | 结束日期 (YYYY-MM-DD) | 今天 |
-| `--range` | 时间范围简写 (`today`, `week`, `month`, `quarter`, `year`) | - |
-| `--personal-limit` | 个人仓库扫描上限（按活跃排序） | `20` |
-| `--org-limit` | 每个组织仓库扫描上限（按活跃排序） | `50` |
+| `--range` | `today`, `week`, `month`, `quarter`, `year` | Today |
+| `--since` / `--until` | Custom dates (YYYY-MM-DD) | - |
+| `--orgs` | Comma-separated organization names | None |
+| `--personal-limit` | Max personal repos to scan | 20 |
+| `--org-limit` | Max repos per organization to scan | 50 |
 
-## 📁 项目结构
+## 🧪 Clinical Trials
 
-```text
-viewgithub/
-├── src/
-│   └── gh_stats/       # 核心逻辑
-│       ├── main.py     # 主程序
-│       └── __init__.py
-├── pyproject.toml      # Poetry 配置
-├── README.md           # 项目文档
-└── .gitignore          # Git 忽略配置
-```
+Tested on developers who thought they wrote "nothing" all day, only to discover they pushed 300 lines of config changes.
 
-## 📝 注意事项
+## 📄 License
 
-- **API 限制**：频繁运行可能会触及 GitHub API 的速率限制。
-- **SAML SSO**：如果统计组织仓库显示为 0 或 403 错误，请确保已通过 `gh auth refresh -s read:org` 并完成了 SSO 授权。
+MIT. Do whatever you want, just write code.

@@ -71,8 +71,6 @@ viewgithub/
 │   └── gh_stats/       # 核心逻辑
 │       ├── main.py     # 主程序
 │       └── __init__.py
-├── scripts/
-│   └── gh-stats.sh     # Shell 脚本版本 (内部使用 Events API)
 ├── pyproject.toml      # Poetry 配置
 ├── README.md           # 项目文档
 └── .gitignore          # Git 忽略配置

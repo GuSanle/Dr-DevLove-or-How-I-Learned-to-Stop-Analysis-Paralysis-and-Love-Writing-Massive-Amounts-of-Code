@@ -40,9 +40,23 @@ def get_org_repos(org, limit=None):
         page += 1
     return repos
 
+import datetime
+
 def get_repo_commits(repo_full_name, author, since_date, until_date):
-    since_iso = f"{since_date}T00:00:00Z"
-    until_iso = f"{until_date}T23:59:59Z"
+    # Determine local timezone offset
+    local_tz = datetime.datetime.now().astimezone().tzinfo
+    
+    # Create local datetime objects for start and end of day
+    since_dt = datetime.datetime.combine(since_date, datetime.time.min, tzinfo=local_tz)
+    until_dt = datetime.datetime.combine(until_date, datetime.time.max, tzinfo=local_tz)
+    
+    # Convert to UTC
+    since_utc = since_dt.astimezone(datetime.timezone.utc)
+    until_utc = until_dt.astimezone(datetime.timezone.utc)
+    
+    # Format as API expects (ISO 8601 with Z)
+    since_iso = since_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+    until_iso = until_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
     
     commits = []
     page = 1

@@ -66,11 +66,30 @@ poetry run gh-stats --range year --no-personal --personal-limit 10
 
 | Flag | Effect | Default |
 | :--- | :--- | :--- |
-| `--range` | `today`, `week`, `month`, `quarter`, `year` | Today |
+| `--range` | Date shorthand (e.g. `today`, `3days`, `week`) | None |
 | `--since` / `--until` | Custom dates (YYYY-MM-DD) | - |
 | `--orgs` | Comma-separated organization names | None |
-| `--personal-limit` | Max personal repos to scan | 20 |
-| `--org-limit` | Max repos per organization to scan | 50 |
+| `--personal-limit` | Max personal repos to scan | Automatic (based on range) |
+| `--org-limit` | Max repos per organization to scan | Automatic (based on range) |
+| `--all-branches` | Enable scanning of all active branches | False (default branch only) |
+
+### 📅 Advanced Usage
+
+**1. Flexible Date Ranges**
+Natural language support, e.g.:
+- `today`
+- `3days` (last 3 days)
+- `2weeks` (last 2 weeks)
+- `today-5days` (5 days before today)
+
+**2. 🌿 Multi-Branch Scanning**
+By default, the tool only counts commits on the default branch (usually `main`).
+If you are working on multiple feature branches in parallel, use `--all-branches` to capture all your recent activity across these branches.
+This works by intelligently analyzing your GitHub Events stream.
+
+```bash
+gh-stats --range 3days --all-branches
+```
 
 ## 🧪 Clinical Trials
 

@@ -16,7 +16,8 @@ def main():
     parser.add_argument('--orgs', type=str, default='', help='Comma-separated organization names')
     parser.add_argument('--since', type=str, help='Start date (YYYY-MM-DD)')
     parser.add_argument('--until', type=str, help='End date (YYYY-MM-DD)')
-    parser.add_argument('--range', type=str, choices=['today', 'week', 'month', 'quarter', 'year'], help='Date range shorthand')
+    # choices removed to allow flexible formats like '3days', 'today-1week'
+    parser.add_argument('--range', type=str, help='Date range (e.g., today, week, 3days, today-2weeks)')
     parser.add_argument('--personal-limit', type=int, help='Max personal repos to scan (0=unlimited)')
     parser.add_argument('--org-limit', type=int, help='Max repos per org to scan (0=unlimited)')
     parser.add_argument('--all-branches', action='store_true', help='Scan all active branches (found via Events API) instead of just default branch')

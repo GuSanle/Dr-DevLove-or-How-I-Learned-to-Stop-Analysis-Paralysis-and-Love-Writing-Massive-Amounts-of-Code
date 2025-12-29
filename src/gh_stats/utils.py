@@ -10,6 +10,11 @@ def parse_relative_date(date_str):
     if date_str == 'today' or date_str == 'now':
         return today
     
+    # YYYYMMDD format (new)
+    compact_match = re.match(r'^(\d{4})(\d{2})(\d{2})$', date_str)
+    if compact_match:
+        return datetime.date(int(compact_match.group(1)), int(compact_match.group(2)), int(compact_match.group(3)))
+
     # Simple N[days|weeks|months|years] (e.g. "3days" -> 3 days ago)
     simple_match = re.match(r'^(\d+)(day|week|month|year)s?$', date_str)
     if simple_match:

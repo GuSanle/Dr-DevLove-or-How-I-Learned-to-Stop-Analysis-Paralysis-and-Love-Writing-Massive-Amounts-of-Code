@@ -17,8 +17,16 @@ def get_current_user():
 def get_user_repos(username, limit=None):
     repos = []
     page = 1
+    # Check if we are querying the authenticated user (which is the main use case)
+    # If so, use /user/repos to get private repos too.
+    # Otherwise (if we supported other users), we'd use /users/{username}/repos.
+    # For now, this tool assumes 'personal' means 'me', the authenticated user.
+    endpoint = 'user/repos'
+    
     while True:
-        data = run_gh_cmd(['api', f'users/{username}/repos?per_page=100&page={page}&type=owner&sort=pushed&direction=desc'], silent=True)
+        # affiliation=owner ensures we get repos we own (public & private)
+        # visibility=all is default but good to be explicit or let affiliation handle it
+        data = run_gh_cmd(['api', f'{endpoint}?per_page=100&page={page}&affiliation=owner&sort=pushed&direction=desc'], silent=True)
         if not data: break
         repos.extend(data)
         if limit and len(repos) >= limit:

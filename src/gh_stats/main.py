@@ -19,6 +19,7 @@ def main():
     parser.add_argument('--range', type=str, choices=['today', 'week', 'month', 'quarter', 'year'], help='Date range shorthand')
     parser.add_argument('--personal-limit', type=int, help='Max personal repos to scan (0=unlimited)')
     parser.add_argument('--org-limit', type=int, help='Max repos per org to scan (0=unlimited)')
+    parser.add_argument('--all-branches', action='store_true', help='Scan all active branches (found via Events API) instead of just default branch')
     args = parser.parse_args()
 
     # Dynamic defaults for limits based on range
@@ -76,7 +77,7 @@ def main():
     
     # Active branches detection (for recent activity)
     active_branches_map = {}
-    if args.range in ['today', 'week'] or (args.range is None and not args.since):
+    if args.all_branches and (args.range in ['today', 'week'] or (args.range is None and not args.since)):
         print(f"{Colors.CYAN}[...]{Colors.ENDC} Analyzing recent activity (Events API)...", end="", flush=True)
         active_branches_map = get_user_active_branches(username)
         print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Analyzed activity across {len(active_branches_map)} repos")

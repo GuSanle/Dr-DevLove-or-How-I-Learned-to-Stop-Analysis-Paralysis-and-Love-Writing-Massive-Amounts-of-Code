@@ -22,17 +22,30 @@
 *   **遠隔診断**: API経由でGitHubのアクティビティを直接スキャンします。ローカルリポジトリは不要です。
 *   **バイタルサイン**: 詐欺師症候群（インポスター・シンドローム）よりも速く回転するプログレスバーを備えた、美しいカラーターミナル出力。
 *   **スケーラブルな治療**: 個人プロジェクトから大規模な組織まで対応します。
-*   **タイムトラベル**: `today` (今日)、`week` (今週)、`month` (今月)、または `year` (今年) の統計を確認できます。
+*   **タイムトラベル**: `today` (今日)、`yesterday` (昨日)、`thisweek` (今週)、`lastweek` (先週) など、柔軟な期間設定が可能です。
+*   **証拠収集**: 全てのコミットメッセージをMarkdownファイルにエクスポート。AIによる分析や週報の作成に最適です。
+*   **トリアージモード**: 最終プッシュ日時でリポジトリを自動ソートし、最新の「救済」プロジェクトを優先的に表示します。
 
-## 📥 服用 (インストール)
+## 📥 服用方法 (インストール)
+
+Dr. DevLoveにはPython 3.9以上とGitHub CLI (`gh`)が必要です。
+
+### 1. 依存関係のインストール
 
 ```bash
+# GitHub CLIのインストール
 brew install gh
 gh auth login
-gh auth refresh -s read:org  # 組織リポジトリに必要
+gh auth refresh -s read:org  # 組織リポジトリのスキャンに必須
 ```
 
-この巨大なリポジトリをクローンし、Poetryでインストールしてください：
+### 2. Poetryのインストール
+
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+### 3. 服用
 
 ```bash
 git clone https://github.com/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code.git
@@ -47,8 +60,19 @@ poetry install
 poetry run gh-stats --range today
 
 # 今月働いたことを上司に証明する
-poetry run gh-stats --range month --orgs YOUR_COMPANY_ORG
+poetry run gh-stats --range thismonth --orgs YOUR_COMPANY_ORG
+
+# AI要約用エクスポート - 先週の全コミットメッセージを出力
+poetry run gh-stats --range lastweek --export-commits
 ```
+
+### パラメータ
+
+| フラグ | 効果 | デフォルト |
+| :--- | :--- | :--- |
+| `--range` | 日付の短縮形 (`today`, `yesterday`, `lastweek`, `3days` など) | なし |
+| `--export-commits` | コミットメッセージをMarkdownに出力 | False |
+| `--all-branches` | 全アクティブブランチをスキャン | False |
 
 ## 📄 ライセンス
 

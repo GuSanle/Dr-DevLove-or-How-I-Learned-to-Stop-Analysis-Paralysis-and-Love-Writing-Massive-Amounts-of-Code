@@ -9,7 +9,7 @@
 
 ¿Estás cansado de mirar un cursor parpadeante? ¿Sufres de *Parálisis por Análisis* crónica? ¿Pasas más tiempo planeando tu código que escribiéndolo?
 
-**Dr. DevLove** (alias `gh-stats`) es tu receta. Es una herramienta CLI que prueba que *estás* trabajando. Valida tu existencia rastreando tus contribuciones diarias de código en todo el universo GitHub, sin necesidad de clones locales porque, ¿quién tiene espacio en disco para eso?
+**Dr. DevLove** (alias `gh-stats`) es tu receta. Es una herramienta CLI que prueba que *estás* trabajando. Valida tu existencia rastreando tus contribuciones diarias de código en todo el universo GitHub, sin necesidad de clones locales.
 
 ---
 
@@ -19,20 +19,20 @@
 
 ## 💊 La Receta (Características)
 
-*   **Diagnóstico Remoto**: Escanea tu actividad en GitHub directamente vía API. No se requieren repositorios locales.
-*   **Signos Vitales**: Hermosa salida de terminal a color con barras de progreso que giran más rápido que tu síndrome del impostor.
-*   **Tratamiento Escalable**: Funciona tanto para proyectos personales como para organizaciones masivas.
-*   **Viaje en el Tiempo**: Revisa tus estadísticas de `today` (hoy), `week` (semana), `month` (mes) o `year` (año).
+*   **Diagnóstico Remoto**: Escanea tu actividad en GitHub directamente vía API. Sin repositorios locales.
+*   **Signos Vitales**: Salida de terminal a color con barras de progreso animadas.
+*   **Tratamiento Escalable**: Proyectos personales y organizaciones.
+*   **Viaje en el Tiempo**: `today` (hoy), `yesterday` (ayer), `thisweek` (esta semana), `lastweek` (semana pasada), etc.
+*   **Recolección de Evidencia**: Exporta todos los mensajes de commit a un archivo Markdown. Ideal para análisis con IA o reportes para tu jefe.
+*   **Modo Triage**: Ordena automáticamente los repositorios por fecha de empuje.
 
 ## 📥 Ingesta (Instalación)
 
 ```bash
 brew install gh
 gh auth login
-gh auth refresh -s read:org  # Requerido para organizaciones
+gh auth refresh -s read:org  # Obligatorio para organizaciones
 ```
-
-Clona este repositorio masivo e instala con Poetry:
 
 ```bash
 git clone https://github.com/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code.git
@@ -46,9 +46,17 @@ poetry install
 # Verifica que hiciste algo hoy
 poetry run gh-stats --range today
 
-# Demuéstrale a tu jefe que trabajaste este mes
-poetry run gh-stats --range month --orgs TU_ORG
+# Exporta commits de la semana pasada para resumen con IA
+poetry run gh-stats --range lastweek --export-commits
 ```
+
+### Parámetros
+
+| Flag | Efecto | Defecto |
+| :--- | :--- | :--- |
+| `--range` | Atajo de fecha (`today`, `yesterday`, `lastweek`, `3days`) | Ninguno |
+| `--export-commits` | Exporta mensajes a Markdown | False |
+| `--all-branches` | Escanea todas las ramas activas | False |
 
 ## 📄 Licencia
 

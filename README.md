@@ -24,6 +24,7 @@ Are you tired of staring at a blank cursor? Do you suffer from chronic *Analysis
 *   **Vital Signs**: Beautiful, colored terminal output with progress bars that spin faster than your imposter syndrome.
 *   **Scalable Treatment**: Works for personal projects and massive organizations alike.
 *   **Time Travel**: Check your stats for `today`, `this week`, `this month`, or `this year`.
+*   **Evidence Collection**: Export all commit messages to a Markdown file for AI analysis or boss-pleasing reports.
 *   **Triage Mode**: Automatically sorts repositories by last push date, so you see your most recent "saves" first.
 
 ## 📥 Intake (Installation)
@@ -58,6 +59,9 @@ poetry run gh-stats --range today
 # Prove to your boss you worked this month
 poetry run gh-stats --range month --orgs YOUR_COMPANY_ORG
 
+# The "AI Summary Starter" - Export all commit messages from last week
+poetry run gh-stats --range lastweek --export-commits
+
 # The "I'm a 10x Engineer" view (Personal repos only, top 10)
 poetry run gh-stats --range year --no-personal --personal-limit 10
 ```
@@ -73,6 +77,7 @@ poetry run gh-stats --range year --no-personal --personal-limit 10
 | `--personal-limit` | Max personal repos to scan | Automatic (based on range) |
 | `--org-limit` | Max repos per organization to scan | Automatic (based on range) |
 | `--all-branches` | Enable scanning of all active branches | False (default branch only) |
+| `--export-commits` | Export commit messages to a Markdown file | False |
 
 ### 📅 Advanced Usage
 
@@ -89,6 +94,13 @@ This works by intelligently analyzing your GitHub Events stream.
 
 ```bash
 gh-stats --range 3days --all-branches
+```
+
+**3. 📝 AI-Ready Export**
+Need a weekly summary? Use `--export-commits` to generate a Markdown file containing every commit message from the period, grouped by project. Perfect for feeding into an LLM to generate professional progress reports.
+
+```bash
+gh-stats --range lastweek --export-commits
 ```
 
 ## 🧪 Clinical Trials

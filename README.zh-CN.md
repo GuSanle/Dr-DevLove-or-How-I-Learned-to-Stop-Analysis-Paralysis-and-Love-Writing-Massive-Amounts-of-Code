@@ -23,7 +23,8 @@
 *   **远程诊断**: 直接通过 API 扫描你的 GitHub 活动。无需本地仓库。
 *   **生命体征**: 美观的彩色终端输出和进度条，旋转速度比你的冒充者综合症发作还快。
 *   **可扩展治疗**: 无论是个人项目还是庞大的组织项目均可使用。
-*   **时间旅行**: 查看 `today` (今天)、`yesterday` (昨天)、`thisweek` (本周)、`lastweek` (上周)、`thismonth` (本月)、`lastmonth` (上月)、`thisyear` (本年)、`lastyear` (去年) 的统计数据。
+*   **时间旅行**: 查看 `today` (今天)、`yesterday` (昨天) 等多种预设或自定义的时间范围。
+*   **证据采集**: 将所有 Commit Message 导出为 Markdown 文件，方便 AI 分析或撰写周报。
 *   **分诊模式**: 自动按最后推送日期排序，让你优先看到最近“抢救”回来的项目。
 
 ## 📥 服用方法 (安装)
@@ -110,6 +111,9 @@ poetry run gh-stats --range thismonth --orgs YOUR_COMPANY_ORG
 # 查看上周的统计
 poetry run gh-stats --range lastweek
 
+# AI 总结神器 - 导出上周所有 commit message
+poetry run gh-stats --range lastweek --export-commits
+
 # "我是 10 倍工程师" 视图 (仅个人仓库，前 50 个)
 poetry run gh-stats --range thisyear --personal-limit 50
 ```
@@ -125,6 +129,7 @@ poetry run gh-stats --range thisyear --personal-limit 50
 | `--personal-limit` | 扫描的个人仓库上限 | 自动 (根据range) |
 | `--org-limit` | 每个组织扫描的仓库上限 | 自动 (根据range) |
 | `--all-branches` | 启用全分支扫描 (默认只扫主线) | False |
+| `--export-commits` | 导出 Commit Message 到 Markdown 文件 | False |
 
 ### 📅 高级用法
 
@@ -156,6 +161,13 @@ poetry run gh-stats --range thisyear --personal-limit 50
 
 ```bash
 gh-stats --range 3days --all-branches
+```
+
+**3. 📝 AI 分析导出 (AI-Ready)**
+需要写周报？使用 `--export-commits` 生成一个包含该时段内所有项目 Commit Message 的 Markdown 文件。非常适合直接投喂给大模型（LLM）来生成专业的工作总结。
+
+```bash
+gh-stats --range lastweek --export-commits
 ```
 
 ## 🧪 临床试验

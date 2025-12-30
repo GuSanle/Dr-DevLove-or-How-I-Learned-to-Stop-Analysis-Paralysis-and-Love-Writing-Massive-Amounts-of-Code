@@ -2,6 +2,7 @@
 ### *或者是：我如何學會停止分析癱瘓並愛上瘋狂寫程式*
 
 [![GitHub license](https://img.shields.io/github/license/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code)](https://github.com/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code)](https://github.com/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code/stargazers)
 
 > "先生們，這裡不能打架！這是作戰室！" — *奇愛博士*
 >
@@ -9,7 +10,7 @@
 
 你是否厭倦了盯著閃爍的游標發呆？你是否患有慢性*分析癱瘓*？你花在計畫程式碼上的時間是否比實際寫程式的時間還長？
 
-**Dr. DevLove** (即 `gh-stats`) 就是你的處方藥。它證明了你*確實*在工作。它透過追蹤你在 GitHub 宇宙中的每日程式碼貢獻來驗證你的存在，而且不需要本地複製倉庫——畢竟誰有那麼多硬碟空間呢？
+**Dr. DevLove** (即 `gh-stats`) 就是你的處方藥。它證明了你*確實*在工作中。它透過追蹤你在 GitHub 宇宙中的每日程式碼貢獻來驗證你的存在，而且不需要本地複製倉庫——畢竟誰有那麼多硬碟空間呢？
 
 ---
 
@@ -22,18 +23,53 @@
 *   **遠端診斷**: 直接透過 API 掃描你的 GitHub 活動。無需本地倉庫。
 *   **生命徵象**: 美觀的彩色終端輸出和進度條，旋轉速度比你的冒名頂替症候群發作還快。
 *   **可擴展治療**: 無論是個人專案還是龐大的組織專案均可使用。
-*   **時光旅行**: 查看 `today` (今天)、`week` (本週)、`month` (本月) 或 `year` (本年) 的統計數據。
+*   **時光旅行**: 查看 `today` (今天)、`yesterday` (昨天) 等多種預設或自定義的時間範圍。
+*   **證據採集**: 將所有 Commit Message 導出為 Markdown 文件，方便 AI 分析或撰寫週報。
+*   **分診模式**: 自動按最後推送日期排序，讓你優先看到最近“搶救”回來的專案。
 
 ## 📥 服用方法 (安裝)
 
 Dr. DevLove 需要 Python 3.9+ 和 GitHub CLI (`gh`)。
 
+### 1. 安裝依賴
+
+#### macOS / Linux
+
 ```bash
+# 安裝 GitHub CLI
 brew install gh
+
+# 認證 GitHub
 gh auth login
-# 組織存取權限（正確診斷所必需）：
+
+# 組織存取權限（正確診斷所必需）
 gh auth refresh -s read:org
 ```
+
+#### Windows
+
+```powershell
+# 安裝 GitHub CLI（使用 winget，Windows 10 1709+ 自帶）
+winget install --id GitHub.cli
+
+# 認證 GitHub
+gh auth login
+
+# 組織存取權限（正確診斷所必需）
+gh auth refresh -s read:org
+```
+
+### 2. 安裝 Poetry
+
+```bash
+# Windows (PowerShell)
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+
+# macOS / Linux
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+### 3. 服藥
 
 複製這個名字超長的倉庫並使用 Poetry 安裝：
 
@@ -51,8 +87,48 @@ poetry install
 # 證明你今天工作了
 poetry run gh-stats --range today
 
+# 查看昨天的工作
+poetry run gh-stats --range yesterday
+
 # 向老闆證明你這個月都在工作
-poetry run gh-stats --range month --orgs YOUR_COMPANY_ORG
+poetry run gh-stats --range thismonth --orgs YOUR_COMPANY_ORG
+
+# AI 總結神器 - 導出上週所有 commit message
+poetry run gh-stats --range lastweek --export-commits
+```
+
+### 參數
+
+| 標誌 | 效果 | 預設值 |
+| :--- | :--- | :--- |
+| `--range` | 日期簡寫 (如 `today`, `yesterday`, `thisweek`, `lastweek`, `lastmonth`, `3days`) | 無 |
+| `--date-after` / `--date-before` | 自定義起止時間 (YYYYMMDD, now-1week) | - |
+| `--since` / `--until` | 同上 | - |
+| `--orgs` | 逗號分隔的組織名稱 | 無 |
+| `--personal-limit` | 掃描的個人倉庫上限 | 自動 |
+| `--org-limit` | 每個組織掃描的倉庫上限 | 自動 |
+| `--all-branches` | 啟用全分支掃描 | False |
+| `--export-commits` | 導出 Commit Message 到 Markdown 文件 | False |
+
+### 📅 高級用法
+
+**1. 靈活的相對日期 (yt-dlp 風格)**
+- `--range 3days` (過去3天)
+- `--date-after 20240101` (YYYYMMDD 格式)
+- `--date-before now-2weeks` (相對時間)
+
+**2. 🌿 多分支掃描**
+使用 `--all-branches` 來捕獲活躍分支上的所有提交。
+
+```bash
+gh-stats --range 3days --all-branches
+```
+
+**3. 📝 AI 分析導出 (AI-Ready)**
+使用 `--export-commits` 生成 Markdown 文件，非常適合直接投餵給大模型（LLM）來生成專業的工作總結。
+
+```bash
+gh-stats --range lastweek --export-commits
 ```
 
 ## 📄 授權條款

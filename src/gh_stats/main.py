@@ -27,30 +27,9 @@ def main():
     parser.add_argument('--all-branches', action='store_true', help='Scan all active branches (found via Events API) instead of just default branch')
     args = parser.parse_args()
 
-    # Dynamic defaults for limits based on range
-    # Format: (personal_limit, org_limit)
-    defaults_map = {
-        'today': (4, 8),
-        'yesterday': (4, 8),
-        'thisweek': (8, 16),
-        'week': (8, 16),
-        'lastweek': (8, 16),
-        'thismonth': (20, 50),
-        'month': (20, 50),
-        'lastmonth': (20, 50),
-        'quarter': (30, 80),
-        'thisyear': (50, 100),
-        'year': (50, 100),
-        'lastyear': (50, 100)
-    }
-    
-    # Determine defaults. If range is custom (e.g. '3days'), try to map to closest or default to week-ish?
-    # Actually, let's keep it simple: if known key use it, else default (20, 50).
-    default_key = args.range if args.range in defaults_map else 'default'
-    default_personal, default_org = defaults_map.get(default_key, (20, 50))
-    
-    personal_limit = args.personal_limit if args.personal_limit is not None else default_personal
-    org_limit = args.org_limit if args.org_limit is not None else default_org
+    # Remove defaults_map and automatic limit logic
+    personal_limit = args.personal_limit
+    org_limit = args.org_limit
 
     # Date Logic
     # 1. Start with 'range' preset if exists
@@ -58,48 +37,27 @@ def main():
         try:
             since_date, until_date = parse_date_range(args.range)
         except ValueError:
-            # If range is not a known keyword but parseable as relative date, parse_date_range handles it
-            # If it fails, we default to today
-             since_date = datetime.date.today()
-             until_date = datetime.date.today()
+            since_date = datetime.date.today()
+            until_date = datetime.date.today()
     else:
-        # Default to today if nothing specified
         since_date = datetime.date.today()
         until_date = datetime.date.today()
 
-    # 2. Override with explicit flags (date-after / date-before)
+    # 2. Override with explicit flags
     if args.since:
         try:
             since_date = parse_relative_date(args.since)
         except ValueError:
-            pass # Or exit? parse_relative_date raises error usually.
-            
+            pass
     if args.until:
         try:
             until_date = parse_relative_date(args.until)
         except ValueError:
-            pass 
-            
-    # If no range AND no specific dates provided? Logic above sets default to today.
-    # But if user provides ONLY --until, since_date remains today? 
-    # Usually if only Until is provided, Since implies "beginning of time"? Or "today"?
-    # For daily stats, defaulting "Since" to "Today" is risky if "Until" is "Yesterday".
-    # Case: --date-before yesterday. Since=Today, Until=Yesterday. -> Empty range.
-    # Adjust: If only Until provided, maybe Since should be unlimited? 
-    # But this tool is for "stats", usually implies a window.
-    # Let's keep it explicit. If you say --date-before yesterday, you likely want --range week --date-before yesterday?
-    # Or just let user enable Since.
-    # However, if 'range' wasn't provided, Since/Until defaulted to Today/Today.
-    # If I set Until=Yesterday, Since is still Today. Range is inverted.
-    # Fix: If Start > End, swap them? Or error?
-    if since_date > until_date and not (args.range and not args.since):
-         # If purely inferred, maybe we shouldn't error but warn. 
-         # But if user said --since tomorrow, that's weird.
-         pass
+            pass
 
     orgs = [o.strip() for o in args.orgs.split(',') if o.strip()]
 
-    # Check gh (cross-platform)
+    # Check gh
     if shutil.which('gh') is None:
         print_styled("Error: 'gh' CLI not installed.", Colors.RED, True)
         sys.exit(1)
@@ -108,18 +66,9 @@ def main():
     print(f"Range: {since_date} to {until_date}")
     if orgs: print(f"Orgs: {', '.join(orgs)}")
     print(f"Personal: {'Yes' if args.personal else 'No'}")
-    
-    limits_info = []
-    if args.personal and personal_limit > 0: limits_info.append(f"personal: {personal_limit}")
-    else: limits_info.append("personal: unlimited")
-    
-    if orgs and org_limit > 0: limits_info.append(f"org: {org_limit}")
-    elif orgs: limits_info.append("org: unlimited")
-    
-    if limits_info: print(f"Limits: {', '.join(limits_info)}")
     print()
 
-    # Auth
+    # Auth - Moved BEFORE discovery logic
     print(f"{Colors.CYAN}[...]{Colors.ENDC} Authenticating...", end="", flush=True)
     username = get_current_user()
     if not username:
@@ -127,26 +76,68 @@ def main():
         sys.exit(1)
     print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Authenticated as: {username}")
     
-    # Active branches detection (for recent activity)
-    active_branches_map = {}
-    if args.all_branches:
-        print(f"{Colors.CYAN}[...]{Colors.ENDC} Analyzing recent activity (Events API)...", end="", flush=True)
-        active_branches_map = get_user_active_branches(username)
-        print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Analyzed activity across {len(active_branches_map)} repos")
+    # Discovery Logic (Hybrid)
+    repos_to_scan_set = set() # (full_name, name) tuples
+    active_branches_map = {} 
+    
+    # 1. ALWAYS run Events API (Precision Layer)
+    # This guarantees we capture everything active in the last ~90 days
+    print(f"{Colors.CYAN}[...]{Colors.ENDC} Analyzing recent activity (Events API)...", end="", flush=True)
+    active_branches_map = get_user_active_branches(username) # {repo: branches}
+    print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Found recent activity in {len(active_branches_map)} repos")
+    
+    for full_name in active_branches_map.keys():
+        if '/' in full_name:
+             _, name = full_name.split('/', 1)
+             repos_to_scan_set.add((full_name, name))
+        else:
+             repos_to_scan_set.add((full_name, full_name))
 
-    # Repos
-    repos_to_scan = []
-    if args.personal:
-        print(f"{Colors.CYAN}[...]{Colors.ENDC} Fetching personal repos...", end="", flush=True)
-        user_repos = get_user_repos(username, personal_limit if personal_limit > 0 else None)
-        repos_to_scan.extend([(r['full_name'], r['name']) for r in user_repos])
-        print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Found {len(user_repos)} personal repos")
+    # 2. Check Range for Fallback (Full History Layer)
+    days_ago = (datetime.date.today() - since_date).days
+    
+    if days_ago > 90:
+        print(f"\n{Colors.WARNING}[WARN]{Colors.ENDC} Time range > 90 days. Events API covers recent 90 days.")
+        print(f"To ensure coverage for older activity (>90 days ago), we can fallback to scanning repo lists.")
+        
+        choice = input(f"{Colors.BOLD}Scan older repos? [a]ll, [number], or [Enter] to skip: {Colors.ENDC}").strip().lower()
+        
+        limit = None
+        should_fetch = False
+        
+        if choice == 'a' or choice == 'all':
+            limit = None
+            should_fetch = True
+            print(f" -> Scanning ALL remaining repositories.")
+        elif choice.isdigit():
+            limit = int(choice)
+            should_fetch = True
+            print(f" -> Scanning top {limit} remaining repositories.")
+        else:
+            print(f" -> Skipping fallback scan. Only checking {len(repos_to_scan_set)} active repos.")
+        
+        if should_fetch:
+            # Fetch Personal
+            if args.personal:
+                print(f"{Colors.CYAN}[...]{Colors.ENDC} Fetching personal repos...", end="", flush=True)
+                user_repos = get_user_repos(username, limit)
+                for r in user_repos:
+                    repos_to_scan_set.add((r['full_name'], r['name']))
+                print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Found {len(user_repos)} personal repos")
 
-    for org in orgs:
-        print(f"{Colors.CYAN}[...]{Colors.ENDC} Fetching {org} repos...", end="", flush=True)
-        org_repos = get_org_repos(org, org_limit if org_limit > 0 else None)
-        repos_to_scan.extend([(r['full_name'], r['name']) for r in org_repos])
-        print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Found {len(org_repos)} repos in {org}")
+            # Fetch Orgs
+            for org in orgs:
+                print(f"{Colors.CYAN}[...]{Colors.ENDC} Fetching {org} repos...", end="", flush=True)
+                org_repos = get_org_repos(org, limit)
+                for r in org_repos:
+                    repos_to_scan_set.add((r['full_name'], r['name']))
+                print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Found {len(org_repos)} repos in {org}")
+                
+    else:
+        print(f"{Colors.CYAN}[INFO]{Colors.ENDC} Range within 90 days. Events API coverage is sufficient.")
+
+    # Convert set to list for processing
+    repos_to_scan = list(repos_to_scan_set)
 
     if not repos_to_scan:
         print_styled("No repositories to scan.", Colors.WARNING)

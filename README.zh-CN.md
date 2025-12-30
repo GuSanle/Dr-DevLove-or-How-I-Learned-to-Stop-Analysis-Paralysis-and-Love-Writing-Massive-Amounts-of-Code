@@ -54,7 +54,7 @@ winget install --id GitHub.cli
 # 或使用 Chocolatey
 # choco install gh
 
-# 或使用 Scoop
+# 或使用 Scoop·
 # scoop install gh
 
 # 认证 GitHub
@@ -110,8 +110,8 @@ poetry run gh-stats --range thismonth --orgs YOUR_COMPANY_ORG
 # 查看上周的统计
 poetry run gh-stats --range lastweek
 
-# "我是 10 倍工程师" 视图 (仅个人仓库，前 10 个)
-poetry run gh-stats --range thisyear --no-personal --personal-limit 10
+# "我是 10 倍工程师" 视图 (仅个人仓库，前 50 个)
+poetry run gh-stats --range thisyear --personal-limit 50
 ```
 
 ### 参数

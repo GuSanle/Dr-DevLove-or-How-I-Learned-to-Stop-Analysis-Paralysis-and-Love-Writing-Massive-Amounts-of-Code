@@ -13,6 +13,7 @@ from .exporter import generate_markdown, write_export_file
 
 def main():
     parser = argparse.ArgumentParser(description="GitHub contribution statistics")
+    parser.add_argument('--user', type=str, help='Target GitHub username (defaults to authenticated user)')
     parser.add_argument('--personal', dest='personal', action='store_true', default=True, help='Include personal repos (default)')
     parser.add_argument('--no-personal', dest='personal', action='store_false', help='Exclude personal repos')
     parser.add_argument('--orgs', type=str, default='', help='Comma-separated organization names')
@@ -72,18 +73,28 @@ def main():
 
     # Auth
     print(f"{Colors.CYAN}[...]{Colors.ENDC} Authenticating...", end="", flush=True)
-    username = get_current_user()
-    if not username:
+    authenticated_user = get_current_user()
+    if not authenticated_user:
         print(f"\r{Colors.RED}[✗]{Colors.ENDC} Error: Run 'gh auth login' first.")
         sys.exit(1)
-    print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Authenticated as: {username}")
+    print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Authenticated as: {authenticated_user}")
+    
+    # Determine target user
+    target_user = args.user if args.user else authenticated_user
+    is_self = (target_user == authenticated_user)
+    
+    if not is_self:
+        print(f"{Colors.CYAN}[INFO]{Colors.ENDC} Analyzing user: {target_user} (public repos only)")
+        if orgs:
+            print(f"{Colors.WARNING}[WARN]{Colors.ENDC} --orgs is ignored when using --user (can only see target's personal public repos)")
     
     # 1. Discovery Phase
     repos_to_scan, active_branches_map = discover_repositories(
-        username=username,
+        username=target_user,
         since_date=since_date,
         orgs=orgs,
-        personal=args.personal
+        personal=args.personal,
+        is_self=is_self
     )
 
     if not repos_to_scan:
@@ -94,7 +105,7 @@ def main():
     stats, repos_with_commits = scan_repositories(
         repos_to_scan=repos_to_scan,
         active_branches_map=active_branches_map,
-        username=username,
+        username=target_user,
         since_date=since_date,
         until_date=until_date,
         collect_messages=args.export_commits

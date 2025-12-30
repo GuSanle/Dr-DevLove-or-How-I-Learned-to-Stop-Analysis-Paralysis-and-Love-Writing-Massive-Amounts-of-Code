@@ -62,6 +62,9 @@ poetry run gh-stats --range month --orgs YOUR_COMPANY_ORG
 # The "AI Summary Starter" - Export all commit messages from last week
 poetry run gh-stats --range lastweek --export-commits
 
+# Stalk the legends - See another user's public repo activity
+poetry run gh-stats --user torvalds --range thismonth
+
 # The "I'm a 10x Engineer" view (Non-personal repos only, top 10)
 poetry run gh-stats --range year --no-personal --org-limit 10
 ```
@@ -70,6 +73,7 @@ poetry run gh-stats --range year --no-personal --org-limit 10
 
 | Flag | Effect | Default |
 | :--- | :--- | :--- |
+| `--user` | Target GitHub username (view other users' public repos) | Authenticated user |
 | `--range` | Date shorthand (e.g. `today`, `3days`, `week`) | None |
 | `--date-after` / `--date-before` | Check window (YYYYMMDD, now-1week) | - |
 | `--since` / `--until` | Alias for above | - |

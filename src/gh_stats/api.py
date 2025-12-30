@@ -14,19 +14,33 @@ def get_current_user():
     data = run_gh_cmd(['api', 'user'])
     return data['login'] if data else None
 
-def get_user_repos(username, limit=None):
+def get_user_repos(username, limit=None, is_self=True):
+    """
+    Fetch repositories for a user.
+    
+    Args:
+        username: GitHub username
+        limit: Max repos to fetch (None = unlimited)
+        is_self: If True, query authenticated user (includes private repos).
+                 If False, query other user (public repos only).
+    
+    Returns:
+        List of repository objects
+    """
     repos = []
     page = 1
-    # Check if we are querying the authenticated user (which is the main use case)
-    # If so, use /user/repos to get private repos too.
-    # Otherwise (if we supported other users), we'd use /users/{username}/repos.
-    # For now, this tool assumes 'personal' means 'me', the authenticated user.
-    endpoint = 'user/repos'
+    
+    if is_self:
+        # Authenticated user: use /user/repos to include private repos
+        endpoint = 'user/repos'
+        query_params = 'affiliation=owner'
+    else:
+        # Other user: use /users/{username}/repos (public repos only)
+        endpoint = f'users/{username}/repos'
+        query_params = 'type=owner'
     
     while True:
-        # affiliation=owner ensures we get repos we own (public & private)
-        # visibility=all is default but good to be explicit or let affiliation handle it
-        data = run_gh_cmd(['api', f'{endpoint}?per_page=100&page={page}&affiliation=owner&sort=pushed&direction=desc'], silent=True)
+        data = run_gh_cmd(['api', f'{endpoint}?per_page=100&page={page}&{query_params}&sort=pushed&direction=desc'], silent=True)
         if not data: break
         repos.extend(data)
         if limit and len(repos) >= limit:

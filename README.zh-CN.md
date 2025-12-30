@@ -114,6 +114,9 @@ poetry run gh-stats --range lastweek
 # AI 总结神器 - 导出上周所有 commit message
 poetry run gh-stats --range lastweek --export-commits
 
+# 围观大佬 - 查看其他用户的公开仓库活动
+poetry run gh-stats --user torvalds --range thismonth
+
 # "我是 10 倍工程师" 视图 (仅个人仓库，前 50 个)
 poetry run gh-stats --range thisyear --personal-limit 50
 ```
@@ -122,6 +125,7 @@ poetry run gh-stats --range thisyear --personal-limit 50
 
 | 标志 | 效果 | 默认值 |
 | :--- | :--- | :--- |
+| `--user` | 目标 GitHub 用户名（可查看他人公开仓库统计） | 当前认证用户 |
 | `--range` | 日期简写 (如 `today`, `yesterday`, `thisweek`, `lastweek`, `thismonth`, `lastmonth`, `thisyear`, `lastyear`, `3days`) | 无 |
 | `--date-after` / `--date-before` | 自定义起止时间 (YYYYMMDD, now-1week) | - |
 | `--since` / `--until` | 同上 (为了兼容性保留) | - |

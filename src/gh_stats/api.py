@@ -163,3 +163,67 @@ def get_commit_stats(repo_full_name, sha):
     if data and 'stats' in data:
         return data['stats'].get('additions', 0), data['stats'].get('deletions', 0)
     return 0, 0
+
+def search_user_commits(username, since_date, until_date):
+    """
+    Use GitHub Search API to find repositories where user has commits.
+    This can discover contributions beyond the 90-day Events API limit.
+    
+    Args:
+        username: GitHub username
+        since_date: Start date (date object)
+        until_date: End date (date object)
+    
+    Returns:
+        Set of unique repository full_names (e.g., {'owner/repo1', 'owner/repo2'})
+    
+    Note: Search API has stricter rate limits (30 requests/minute).
+          Maximum 1000 results can be returned.
+    """
+    import time
+    
+    repos_found = set()
+    page = 1
+    max_pages = 10  # 100 results per page * 10 = 1000 max results
+    
+    # Format dates for search query: YYYY-MM-DD
+    since_str = since_date.strftime('%Y-%m-%d')
+    until_str = until_date.strftime('%Y-%m-%d')
+    
+    # Search query: author:{username} committer-date:{since}..{until}
+    query = f'author:{username}+committer-date:{since_str}..{until_str}'
+    
+    while page <= max_pages:
+        # Search API requires special Accept header for commits
+        cmd = [
+            'api',
+            '-H', 'Accept: application/vnd.github.cloak-preview+json',
+            f'search/commits?q={query}&per_page=100&page={page}&sort=committer-date&order=desc'
+        ]
+        
+        data = run_gh_cmd(cmd, silent=True)
+        
+        if not data:
+            break
+            
+        items = data.get('items', [])
+        if not items:
+            break
+            
+        for item in items:
+            repo = item.get('repository', {})
+            full_name = repo.get('full_name')
+            if full_name:
+                repos_found.add(full_name)
+        
+        # Check if we've fetched all results
+        total_count = data.get('total_count', 0)
+        if page * 100 >= total_count or page * 100 >= 1000:
+            break
+            
+        page += 1
+        # Small delay to be nice to rate limits
+        time.sleep(0.5)
+    
+    return repos_found
+

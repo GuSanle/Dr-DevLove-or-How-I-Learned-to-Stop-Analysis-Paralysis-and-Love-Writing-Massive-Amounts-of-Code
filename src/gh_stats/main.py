@@ -92,6 +92,7 @@ def main():
     repos_to_scan, active_branches_map = discover_repositories(
         username=target_user,
         since_date=since_date,
+        until_date=until_date,
         orgs=orgs,
         personal=args.personal,
         is_self=is_self

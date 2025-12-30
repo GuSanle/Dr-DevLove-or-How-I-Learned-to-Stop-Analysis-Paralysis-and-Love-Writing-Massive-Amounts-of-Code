@@ -11,6 +11,7 @@ def mock_api(mocker):
         'get_active': mocker.patch('gh_stats.discovery.get_user_active_branches'),
         'get_user_repos': mocker.patch('gh_stats.discovery.get_user_repos'),
         'get_org_repos': mocker.patch('gh_stats.discovery.get_org_repos'),
+        'search_commits': mocker.patch('gh_stats.discovery.search_user_commits'),
     }
 
 def test_discover_recent_events_only(mock_api):
@@ -26,6 +27,7 @@ def test_discover_recent_events_only(mock_api):
     repos, branches = discover_repositories(
         username='user',
         since_date=date.today(),
+        until_date=date.today(),
         orgs=[],
         personal=True
     )
@@ -52,6 +54,7 @@ def test_discover_filtering_personal_only(mock_api):
     repos, _ = discover_repositories(
         username='user',
         since_date=date.today(),
+        until_date=date.today(),
         orgs=[],
         personal=True
     )
@@ -72,6 +75,7 @@ def test_discover_filtering_org_only(mock_api):
     repos, _ = discover_repositories(
         username='user',
         since_date=date.today(),
+        until_date=date.today(),
         orgs=['target-org'],
         personal=False
     )
@@ -100,6 +104,7 @@ def test_discover_fallback_logic(mock_api):
     repos, _ = discover_repositories(
         username='user',
         since_date=long_ago,
+        until_date=date.today(),
         orgs=[],
         personal=True,
         prompt_callback=mock_prompt
@@ -127,6 +132,7 @@ def test_discover_fallback_skip(mock_api):
     repos, _ = discover_repositories(
         username='user',
         since_date=long_ago,
+        until_date=date.today(),
         orgs=[],
         personal=True,
         prompt_callback=mock_prompt
@@ -138,3 +144,4 @@ def test_discover_fallback_skip(mock_api):
     
     # Verify fallback was NOT called
     mock_api['get_user_repos'].assert_not_called()
+

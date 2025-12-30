@@ -1,11 +1,11 @@
 from datetime import date
-from .api import get_user_active_branches, get_user_repos, get_org_repos
+from .api import get_user_active_branches, get_user_repos, get_org_repos, search_user_commits
 from .ui import Colors
 
 def default_prompt_callback(msg):
     return input(msg)
 
-def discover_repositories(username, since_date, orgs, personal, is_self=True, prompt_callback=default_prompt_callback):
+def discover_repositories(username, since_date, until_date, orgs, personal, is_self=True, prompt_callback=default_prompt_callback):
     """
     Discover repositories based on the hybrid logic:
     1. Always check Events API for recent activity (precision layer).
@@ -14,6 +14,7 @@ def discover_repositories(username, since_date, orgs, personal, is_self=True, pr
     Args:
         username: Target GitHub username to analyze
         since_date: Start date for the range
+        until_date: End date for the range
         orgs: List of organization names to include
         personal: Whether to include personal repos
         is_self: True if username is the authenticated user (can see private repos),
@@ -65,15 +66,46 @@ def discover_repositories(username, since_date, orgs, personal, is_self=True, pr
         print(f"\n{Colors.WARNING}[WARN]{Colors.ENDC} Time range > 90 days. Events API covers recent 90 days.")
         print(f"To ensure coverage for older activity (>90 days ago), we can fallback to scanning repo lists.")
         
-        choice = prompt_callback(f"{Colors.BOLD}Scan older repos? [a]ll, [number], or [Enter] to skip: {Colors.ENDC}").strip().lower()
+        choice = prompt_callback(f"{Colors.BOLD}Scan older repos? [a]ll, [number], [d]eepsearch, or [Enter] to skip: {Colors.ENDC}").strip().lower()
         
         limit = None
         should_fetch = False
+        use_deepsearch = False
         
         if choice == 'a' or choice == 'all':
             limit = None
             should_fetch = True
             print(f" -> Scanning ALL remaining repositories.")
+        elif choice == 'd' or choice == 'deepsearch':
+            use_deepsearch = True
+            print(f"\n{Colors.WARNING}[RATE LIMIT WARNING]{Colors.ENDC}")
+            print(f"  Deep search uses GitHub Search API which has stricter rate limits:")
+            print(f"  - 30 requests/minute (vs 5000/hour for regular API)")
+            print(f"  - Maximum 1000 commits can be discovered")
+            print(f"  This may take a while for active users.\n")
+            print(f"{Colors.CYAN}[...]{Colors.ENDC} Searching commits via Search API...", end="", flush=True)
+            
+            found_repos = search_user_commits(username, since_date, until_date)
+            
+            # Apply same filtering logic as Events API results
+            filtered_count = 0
+            for full_name in found_repos:
+                owner, name = full_name.split('/', 1) if '/' in full_name else (username, full_name)
+                
+                if not is_self:
+                    # When querying OTHER users: include all repos
+                    repos_to_scan_set.add((full_name, name))
+                    filtered_count += 1
+                else:
+                    # When querying SELF: apply filtering logic
+                    is_personal_match = personal and (owner == username)
+                    is_org_match = owner in orgs
+                    
+                    if is_personal_match or is_org_match:
+                        repos_to_scan_set.add((full_name, name))
+                        filtered_count += 1
+            
+            print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Deep search found {len(found_repos)} repos, {filtered_count} matched filters")
         elif choice.isdigit():
             limit = int(choice)
             should_fetch = True
@@ -81,7 +113,7 @@ def discover_repositories(username, since_date, orgs, personal, is_self=True, pr
         else:
             print(f" -> Skipping fallback scan. Only checking {len(repos_to_scan_set)} active repos.")
         
-        if should_fetch:
+        if should_fetch and not use_deepsearch:
             # Fetch Personal repos
             if personal:
                 print(f"{Colors.CYAN}[...]{Colors.ENDC} Fetching personal repos...", end="", flush=True)
@@ -103,4 +135,5 @@ def discover_repositories(username, since_date, orgs, personal, is_self=True, pr
         print(f"{Colors.CYAN}[INFO]{Colors.ENDC} Range within 90 days. Events API coverage is sufficient.")
 
     return list(repos_to_scan_set), active_branches_map
+
 

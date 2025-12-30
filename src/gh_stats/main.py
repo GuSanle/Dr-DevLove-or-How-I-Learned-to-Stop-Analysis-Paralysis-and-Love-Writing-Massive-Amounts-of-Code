@@ -129,7 +129,7 @@ def main():
     
     # Active branches detection (for recent activity)
     active_branches_map = {}
-    if args.all_branches and (args.range in ['today', 'yesterday', 'thisweek', 'week'] or (args.range is None and not args.since)):
+    if args.all_branches:
         print(f"{Colors.CYAN}[...]{Colors.ENDC} Analyzing recent activity (Events API)...", end="", flush=True)
         active_branches_map = get_user_active_branches(username)
         print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Analyzed activity across {len(active_branches_map)} repos")

@@ -3,7 +3,7 @@ import subprocess
 
 def run_gh_cmd(args, silent=False):
     try:
-        result = subprocess.run(['gh'] + args, capture_output=True, text=True, check=True)
+        result = subprocess.run(['gh'] + args, capture_output=True, encoding='utf-8', check=True)
         return json.loads(result.stdout)
     except subprocess.CalledProcessError:
         return None

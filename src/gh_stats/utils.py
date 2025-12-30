@@ -15,8 +15,9 @@ def parse_relative_date(date_str):
     if compact_match:
         return datetime.date(int(compact_match.group(1)), int(compact_match.group(2)), int(compact_match.group(3)))
 
-    # Simple N[days|weeks|months|years] (e.g. "3days" -> 3 days ago)
-    simple_match = re.match(r'^(\d+)(day|week|month|year)s?$', date_str)
+    # Explicit "lastN..." format (e.g. "last3days" -> 3 days ago, "last2weeks" -> 2 weeks ago)
+    # Rolling window anchor
+    simple_match = re.match(r'^last(\d+)(day|week|month|year)s?$', date_str)
     if simple_match:
         num = int(simple_match.group(1))
         unit = simple_match.group(2)

@@ -18,3 +18,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 packages = [{include = "gh_stats", from = "src"}]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+

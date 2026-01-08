@@ -249,18 +249,30 @@ def generate_team_markdown_table(team_stats, since_date, until_date):
     lines = []
     lines.append(f"## Team Summary ({since_date} ~ {until_date})\n")
     
-    lines.append("| Contributor | Commits | Changes |")
-    lines.append("|:------------|--------:|:--------|")
+    lines.append("| Contributor | Commits | Added | Deleted | Net Growth | Total Changes | Active Days |")
+    lines.append("|:------------|--------:|------:|--------:|-----------:|--------------:|:------------|")
     
     total_commits = total_added = total_deleted = 0
+    total_days = (until_date - since_date).days + 1
     
     for user, data in sorted(team_stats.items(), key=lambda x: x[1]['commits'], reverse=True):
         total_commits += data['commits']
         total_added += data['added']
         total_deleted += data['deleted']
         
-        changes_str = f"+{data['added']} / -{data['deleted']}"
-        lines.append(f"| {user} | {data['commits']} | {changes_str} |")
+        net_growth = data['added'] - data['deleted']
+        total_changes = data['added'] + data['deleted']
+        
+        # Calculate active days for this user
+        user_dates = set()
+        for msg in data.get('messages', []):
+            if 'date' in msg:
+                user_dates.add(msg['date'].date())
+        active_days = len(user_dates)
+        active_pct = (active_days / total_days * 100) if total_days > 0 else 0
+        active_str = f"{active_days}/{total_days} ({active_pct:.0f}%)"
+        
+        lines.append(f"| {user} | {data['commits']} | +{data['added']} | -{data['deleted']} | {net_growth:+} | {total_changes} | {active_str} |")
 
     lines.append("")
     

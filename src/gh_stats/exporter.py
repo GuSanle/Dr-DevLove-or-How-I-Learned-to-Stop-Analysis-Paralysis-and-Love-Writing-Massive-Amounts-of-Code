@@ -69,32 +69,49 @@ def generate_markdown(stats, since_date, until_date, full_message=False):
 
 import os
 
+# Default directory for exported reports
+DEFAULT_EXPORT_DIR = "reports"
+
 def write_export_file(content, since_date, until_date, output_filename=None):
     """
     Writes the content to a file. Avoids overwriting by appending a counter.
+    Files are saved to 'reports/' directory by default.
     """
+    # Determine target directory and filename
     if output_filename:
-        # User specified filename
-        base_name, extension = os.path.splitext(output_filename)
-        if not extension:
-             extension = ".md" 
-             output_filename += extension
-             filename = output_filename
+        # Check if user provided a path with directory
+        dir_part = os.path.dirname(output_filename)
+        file_part = os.path.basename(output_filename)
+        
+        if dir_part:
+            # User specified a directory path
+            target_dir = dir_part
         else:
-            filename = output_filename
+            # No directory specified, use default
+            target_dir = DEFAULT_EXPORT_DIR
+        
+        base_name, extension = os.path.splitext(file_part)
+        if not extension:
+            extension = ".md"
+            file_part += extension
     else:
-        # Default filename
+        # Default filename and directory
+        target_dir = DEFAULT_EXPORT_DIR
         base_name = f"gh_stats_export_{since_date}_{until_date}"
         extension = ".md"
-        filename = f"{base_name}{extension}"
+        file_part = f"{base_name}{extension}"
     
+    # Ensure target directory exists
+    if target_dir and not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+    
+    # Build full path
+    filename = os.path.join(target_dir, file_part) if target_dir else file_part
+    
+    # Avoid overwriting by appending counter
     counter = 1
-    # Check if we need to rename to avoid overwrite
-    # Note: If user provided 'report.md', and it exists, we will try 'report_1.md'
-    original_base = base_name
+    original_base = os.path.join(target_dir, base_name) if target_dir else base_name
     while os.path.exists(filename):
-        # Reconstruct filename with counter
-        # Special handling if base_name already ends with active counter pattern could be nice but simple appending is safer and easier.
         filename = f"{original_base}_{counter}{extension}"
         counter += 1
         

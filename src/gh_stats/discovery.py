@@ -56,15 +56,47 @@ def discover_repositories(username, since_date, until_date, orgs, personal, is_s
     
     # 2. When viewing other user with org filter, also fetch org repos
     # Events API can't see their activity in private org repos
+    ORG_REPO_THRESHOLD = 64
+    
     if not is_self and orgs:
-        print(f"{Colors.CYAN}[...]{Colors.ENDC} Fetching organization repos...", end="", flush=True)
-        org_repo_count = 0
+        # First, get a count of total repos
+        print(f"{Colors.CYAN}[...]{Colors.ENDC} Checking organization repos...", end="", flush=True)
+        total_org_repos = 0
+        org_repo_lists = {}
         for org in orgs:
             org_repos = get_org_repos(org, limit=None)
-            for r in org_repos:
-                repos_to_scan_set.add((r['full_name'], r['name']))
-                org_repo_count += 1
-        print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Added {org_repo_count} repos from {', '.join(orgs)}")
+            org_repo_lists[org] = org_repos
+            total_org_repos += len(org_repos)
+        print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Found {total_org_repos} repos in {', '.join(orgs)}")
+        
+        # If above threshold, ask user
+        scan_limit = None
+        if total_org_repos > ORG_REPO_THRESHOLD:
+            print(f"\n{Colors.WARNING}[NOTE]{Colors.ENDC} {total_org_repos} repos is a lot. Scanning all may take a while.")
+            print(f"Repos are sorted by most recently updated.")
+            choice = prompt_callback(f"{Colors.BOLD}Scan [a]ll, enter a [number] to limit, or [Enter] to skip org repos: {Colors.ENDC}").strip().lower()
+            
+            if choice == 'a' or choice == 'all':
+                scan_limit = None  # Scan all
+            elif choice.isdigit():
+                scan_limit = int(choice)
+                print(f" -> Scanning top {scan_limit} most recently updated repos per org.")
+            elif choice == '':
+                scan_limit = 0  # Skip
+                print(f" -> Skipping org repos. Only scanning repos from Events API.")
+            else:
+                scan_limit = 0  # Skip on invalid input
+        
+        # Add repos based on limit
+        if scan_limit != 0:
+            org_repo_count = 0
+            for org, repos_list in org_repo_lists.items():
+                repos_to_add = repos_list if scan_limit is None else repos_list[:scan_limit]
+                for r in repos_to_add:
+                    repos_to_scan_set.add((r['full_name'], r['name']))
+                    org_repo_count += 1
+            if total_org_repos <= ORG_REPO_THRESHOLD or scan_limit is not None:
+                print(f"{Colors.CYAN}[INFO]{Colors.ENDC} Added {org_repo_count} org repos to scan list.")
 
     # 2. Check Range for Fallback (Full History Layer)
     days_ago = (date.today() - since_date).days

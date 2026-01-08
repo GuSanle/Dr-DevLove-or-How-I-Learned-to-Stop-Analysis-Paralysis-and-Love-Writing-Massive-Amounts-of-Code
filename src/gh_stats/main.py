@@ -86,9 +86,10 @@ def main():
     is_self = (target_user == authenticated_user)
     
     if not is_self:
-        print(f"{Colors.CYAN}[INFO]{Colors.ENDC} Analyzing user: {target_user} (public repos only)")
         if orgs:
-            print(f"{Colors.WARNING}[WARN]{Colors.ENDC} --orgs is ignored when using --user (can only see target's personal public repos)")
+            print(f"{Colors.CYAN}[INFO]{Colors.ENDC} Analyzing user: {target_user} in orgs: {', '.join(orgs)}")
+        else:
+            print(f"{Colors.CYAN}[INFO]{Colors.ENDC} Analyzing user: {target_user} (public repos only)")
     
     # 1. Discovery Phase
     repos_to_scan, active_branches_map = discover_repositories(

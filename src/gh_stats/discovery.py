@@ -29,11 +29,10 @@ def discover_repositories(username, since_date, until_date, orgs, personal, is_s
     repos_to_scan_set = set() # (full_name, name) tuples
     active_branches_map = {} 
     
-    # When querying other users, orgs filter doesn't apply (we only see their personal public repos)
-    if not is_self:
-        orgs = []
+    # When querying other users without orgs, we only see their personal public repos
+    if not is_self and not orgs:
         if not personal:
-            print(f"{Colors.WARNING}[WARN]{Colors.ENDC} --no-personal with --user makes no sense. Enabling personal repos.")
+            print(f"{Colors.WARNING}[WARN]{Colors.ENDC} --no-personal with --user (no orgs) makes no sense. Enabling personal repos.")
             personal = True
     
     # 1. ALWAYS run Events API (Precision Layer)
@@ -44,13 +43,13 @@ def discover_repositories(username, since_date, until_date, orgs, personal, is_s
     for full_name in active_branches_map.keys():
         owner, name = full_name.split('/', 1) if '/' in full_name else (username, full_name)
         
-        if not is_self:
-            # When querying OTHER users: include ALL repos from Events API
+        if not is_self and not orgs:
+            # When querying OTHER users without org filter: include ALL repos from Events API
             # These are all repos where the target user had public activity
             repos_to_scan_set.add((full_name, name))
         else:
-            # When querying SELF: apply filtering logic
-            # 1. Personal Repos: Include if --personal is active AND owner is me
+            # Apply filtering logic (for self, or for other user with org filter)
+            # 1. Personal Repos: Include if --personal is active AND owner is target user
             is_personal_match = personal and (owner == username)
             
             # 2. Org Repos: Include if owner is in the allowed orgs list
@@ -92,12 +91,12 @@ def discover_repositories(username, since_date, until_date, orgs, personal, is_s
             for full_name in found_repos:
                 owner, name = full_name.split('/', 1) if '/' in full_name else (username, full_name)
                 
-                if not is_self:
-                    # When querying OTHER users: include all repos
+                if not is_self and not orgs:
+                    # When querying OTHER users without org filter: include all repos
                     repos_to_scan_set.add((full_name, name))
                     filtered_count += 1
                 else:
-                    # When querying SELF: apply filtering logic
+                    # Apply filtering logic (for self, or for other user with org filter)
                     is_personal_match = personal and (owner == username)
                     is_org_match = owner in orgs
                     

@@ -77,6 +77,9 @@ def generate_team_markdown(team_stats, since_date, until_date, group_by='user', 
         full_message: Include full commit body
     """
     md = []
+    # Use a slightly different header level or text if it follows the table
+    # But usually this function is self-contained. 
+    # In main.py combined output, this header acts as a separator.
     md.append(f"# Team Activity Report ({since_date} to {until_date})\n")
     
     if group_by == 'user':

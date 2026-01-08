@@ -249,16 +249,18 @@ def generate_team_markdown_table(team_stats, since_date, until_date):
     lines = []
     lines.append(f"## Team Summary ({since_date} ~ {until_date})\n")
     
-    lines.append("| Contributor | Commits | Added | Deleted | Net Growth | Total Changes | Active Days |")
-    lines.append("|:------------|--------:|------:|--------:|-----------:|--------------:|:------------|")
-    
     total_commits = total_added = total_deleted = 0
     total_days = (until_date - since_date).days + 1
+    all_active_repos = set()
+    table_rows = []
     
     for user, data in sorted(team_stats.items(), key=lambda x: x[1]['commits'], reverse=True):
         total_commits += data['commits']
         total_added += data['added']
         total_deleted += data['deleted']
+        
+        # Collect active repos
+        all_active_repos.update(data.get('repos', {}).keys())
         
         net_growth = data['added'] - data['deleted']
         total_changes = data['added'] + data['deleted']
@@ -272,20 +274,25 @@ def generate_team_markdown_table(team_stats, since_date, until_date):
         active_pct = (active_days / total_days * 100) if total_days > 0 else 0
         active_str = f"{active_days}/{total_days} ({active_pct:.0f}%)"
         
-        lines.append(f"| {user} | {data['commits']} | +{data['added']} | -{data['deleted']} | {net_growth:+} | {total_changes} | {active_str} |")
+        table_rows.append(f"| {user} | {data['commits']} | +{data['added']} | -{data['deleted']} | {net_growth:+} | {total_changes} | {active_str} |")
 
-    lines.append("")
-    
-    # Calculate additional metrics
+    # Team Totals Section (Moved to top)
     total_changes = total_added + total_deleted
     net_growth = total_added - total_deleted
     
     lines.append(f"**Team Totals:**")
     lines.append(f"- Contributors: {len(team_stats)}")
+    lines.append(f"- Active Repos: {len(all_active_repos)}")
     lines.append(f"- Total Commits: {total_commits}")
     lines.append(f"- Total Changes: {total_changes} lines")
     lines.append(f"- Net Growth: {net_growth:+} lines")
     lines.append(f"- Lines Added: +{total_added}")
     lines.append(f"- Lines Deleted: -{total_deleted}")
+    lines.append("")
+    
+    # Table Header & Content
+    lines.append("| Contributor | Commits | Added | Deleted | Net Growth | Total Changes | Active Days |")
+    lines.append("|:------------|--------:|------:|--------:|-----------:|--------------:|:------------|")
+    lines.extend(table_rows)
     
     return "\n".join(lines)

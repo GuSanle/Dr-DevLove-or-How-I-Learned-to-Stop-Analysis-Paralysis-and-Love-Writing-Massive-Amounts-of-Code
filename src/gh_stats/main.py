@@ -4,12 +4,12 @@ import argparse
 import datetime
 import shutil
 
-from .api import get_current_user
-from .ui import Colors, print_styled, render_table, generate_ascii_table, generate_markdown_table
+from .api import get_current_user, get_org_repos
+from .ui import Colors, print_styled, render_table, generate_ascii_table, generate_markdown_table, generate_team_table, generate_team_markdown_table
 from .date_parser import parse_date_range, parse_relative_date
 from .discovery import discover_repositories
-from .scanner import scan_repositories
-from .exporter import generate_markdown, write_export_file
+from .scanner import scan_repositories, scan_org_team_stats
+from .exporter import generate_markdown, generate_team_markdown, write_export_file
 
 def main():
     parser = argparse.ArgumentParser(description="GitHub contribution statistics")
@@ -30,6 +30,8 @@ def main():
     parser.add_argument('--export-commits', action='store_true', help='Export commit messages to a Markdown file')
     parser.add_argument('--full-message', action='store_true', help='Include full commit message body in export')
     parser.add_argument('--output', '-o', type=str, help='Specify output filename for export')
+    parser.add_argument('--org-users', action='store_true', help='Compare all contributors in the specified org(s)')
+    parser.add_argument('--group-by', type=str, choices=['user', 'repo'], default='user', help='Group export by user or repo (for --org-users)')
     args = parser.parse_args()
 
     # Remove defaults_map and automatic limit logic
@@ -91,6 +93,59 @@ def main():
         else:
             print(f"{Colors.CYAN}[INFO]{Colors.ENDC} Analyzing user: {target_user} (public repos only)")
     
+    # Team mode: --org-users
+    if args.org_users:
+        if not orgs:
+            print_styled("Error: --org-users requires --orgs to be specified.", Colors.RED)
+            sys.exit(1)
+        
+        print(f"{Colors.CYAN}[INFO]{Colors.ENDC} Team mode: comparing all contributors in {', '.join(orgs)}")
+        
+        # Fetch all org repos (no limit prompt for team mode)
+        repos_to_scan = []
+        print(f"{Colors.CYAN}[...]{Colors.ENDC} Fetching organization repos...", end="", flush=True)
+        for org in orgs:
+            org_repos = get_org_repos(org, limit=None)
+            for r in org_repos:
+                repos_to_scan.append((r['full_name'], r['name']))
+        print(f"\r{Colors.GREEN}[✔]{Colors.ENDC} Found {len(repos_to_scan)} repos in {', '.join(orgs)}")
+        
+        if not repos_to_scan:
+            print_styled("No repositories found in the specified org(s).", Colors.WARNING)
+            return
+        
+        # Scan for team stats
+        team_stats, repos_with_commits = scan_org_team_stats(
+            repos_to_scan=repos_to_scan,
+            since_date=since_date,
+            until_date=until_date,
+            collect_messages=(args.export_commits or args.full_message or args.output is not None)
+        )
+        
+        if not team_stats:
+            print_styled("No commits found in the specified range.", Colors.WARNING)
+            return
+        
+        # Output
+        msg_content = ""
+        if args.export_commits or args.full_message:
+            msg_content = generate_team_markdown(team_stats, since_date, until_date, 
+                                                  group_by=args.group_by, full_message=args.full_message)
+        
+        if args.output:
+            print_styled(f"\nGenerating team report...", Colors.CYAN)
+            table_str_file = generate_team_markdown_table(team_stats, since_date, until_date)
+            final_content = f"{table_str_file}\n\n{msg_content}"
+            filename = write_export_file(final_content, since_date, until_date, args.output)
+            print(f"{Colors.GREEN}[✔]{Colors.ENDC} Exported team data to: {filename}")
+        else:
+            print(generate_team_table(team_stats, since_date, until_date, use_colors=True))
+            if msg_content:
+                print("\nDetailed Team Report:\n")
+                print(msg_content)
+        return
+    
+    # Normal mode (non-team)
     # 1. Discovery Phase
     repos_to_scan, active_branches_map = discover_repositories(
         username=target_user,

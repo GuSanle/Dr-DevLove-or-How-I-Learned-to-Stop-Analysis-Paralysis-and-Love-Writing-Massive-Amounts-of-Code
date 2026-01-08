@@ -158,6 +158,34 @@ def get_repo_commits(repo_full_name, author, since_date, until_date, branches=No
             
     return commits
 
+def get_repo_all_commits(repo_full_name, since_date, until_date):
+    """Get all commits from a repo without filtering by author."""
+    local_tz = datetime.datetime.now().astimezone().tzinfo
+    
+    since_dt = datetime.datetime.combine(since_date, datetime.time.min, tzinfo=local_tz)
+    until_dt = datetime.datetime.combine(until_date, datetime.time.max, tzinfo=local_tz)
+    
+    since_utc = since_dt.astimezone(datetime.timezone.utc)
+    until_utc = until_dt.astimezone(datetime.timezone.utc)
+    
+    since_iso = since_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+    until_iso = until_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+    
+    commits = []
+    page = 1
+    while True:
+        cmd = [
+            'api', 
+            f'repos/{repo_full_name}/commits?since={since_iso}&until={until_iso}&per_page=100&page={page}'
+        ]
+        data = run_gh_cmd(cmd, silent=True)
+        if not data: break
+        commits.extend(data)
+        if len(data) < 100: break
+        page += 1
+            
+    return commits
+
 def get_commit_stats(repo_full_name, sha):
     data = run_gh_cmd(['api', f'repos/{repo_full_name}/commits/{sha}'], silent=True)
     if data and 'stats' in data:

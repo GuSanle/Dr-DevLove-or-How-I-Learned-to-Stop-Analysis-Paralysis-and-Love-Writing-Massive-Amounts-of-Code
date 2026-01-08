@@ -134,3 +134,96 @@ def generate_markdown_table(stats, since_date, until_date):
     lines.append(f"- Lines Deleted: -{total_deleted}")
     
     return "\n".join(lines)
+
+def generate_team_table(team_stats, since_date, until_date, use_colors=True):
+    """Generate ASCII table for team stats (sorted by commits descending)."""
+    if not team_stats:
+        return "No commits found in the specified range."
+
+    lines = []
+    lines.append("")
+    
+    def c(text, color):
+        return f"{color}{text}{Colors.ENDC}" if use_colors else text
+
+    max_user_len = max(len(u) for u in team_stats.keys())
+    col_user = min(max(max_user_len + 2, 15), 30)
+    col_commits = 10
+    col_changes = 25
+
+    def get_sep(chars):
+        if use_colors:
+            return f"{Colors.BLUE}{chars[0]}{chars[1]*col_user}{chars[2]}{chars[1]*col_commits}{chars[2]}{chars[1]*col_changes}{chars[3]}{Colors.ENDC}"
+        else:
+            return f"{chars[0]}{chars[1]*col_user}{chars[2]}{chars[1]*col_commits}{chars[2]}{chars[1]*col_changes}{chars[3]}"
+
+    lines.append(get_sep("┌─┬┐"))
+    
+    h_user = c(f"{'Contributor':<{col_user-1}}", Colors.BOLD)
+    h_commits = c(f"{'Commits':<{col_commits-1}}", Colors.BOLD)
+    h_changes = c(f"{'Changes':<{col_changes-1}}", Colors.BOLD)
+    
+    sep_char = c("│", Colors.BLUE)
+    lines.append(f"{sep_char} {h_user}{sep_char} {h_commits}{sep_char} {h_changes}{sep_char}")
+    lines.append(get_sep("├─┼┤"))
+
+    total_commits = total_added = total_deleted = 0
+    
+    for user, data in sorted(team_stats.items(), key=lambda x: x[1]['commits'], reverse=True):
+        total_commits += data['commits']
+        total_added += data['added']
+        total_deleted += data['deleted']
+        
+        if use_colors:
+            changes_str = f"{Colors.GREEN}+{data['added']}{Colors.ENDC} / {Colors.RED}-{data['deleted']}{Colors.ENDC}"
+        else:
+            changes_str = f"+{data['added']} / -{data['deleted']}"
+            
+        visible_len = len(f"+{data['added']} / -{data['deleted']}")
+        padding = col_changes - 1 - visible_len
+        
+        truncated_user = user[:col_user-3] + ".." if len(user) > col_user-1 else user
+        u_name = c(f"{truncated_user:<{col_user-1}}", Colors.CYAN)
+        c_count = f"{str(data['commits']):<{col_commits-1}}"
+        
+        lines.append(f"{sep_char} {u_name}{sep_char} {c_count}{sep_char} {changes_str}{' '*padding}{sep_char}")
+
+    lines.append(get_sep("└─┴┘"))
+
+    lines.append(f"\n{c(f'Team Summary ({since_date} ~ {until_date}):', Colors.BOLD)}")
+    lines.append(f"  • Contributors:    {c(len(team_stats), Colors.CYAN)}")
+    lines.append(f"  • Total Commits:   {c(total_commits, Colors.CYAN)}")
+    lines.append(f"  • Total Growth:    {c(f'+{total_added}', Colors.GREEN)} lines")
+    lines.append(f"  • Total Cleaning:  {c(f'-{total_deleted}', Colors.RED)} lines")
+    
+    return "\n".join(lines)
+
+def generate_team_markdown_table(team_stats, since_date, until_date):
+    """Generate Markdown table for team stats."""
+    if not team_stats:
+        return "No commits found in the specified range."
+
+    lines = []
+    lines.append(f"## Team Summary ({since_date} ~ {until_date})\n")
+    
+    lines.append("| Contributor | Commits | Changes |")
+    lines.append("|:------------|--------:|:--------|")
+    
+    total_commits = total_added = total_deleted = 0
+    
+    for user, data in sorted(team_stats.items(), key=lambda x: x[1]['commits'], reverse=True):
+        total_commits += data['commits']
+        total_added += data['added']
+        total_deleted += data['deleted']
+        
+        changes_str = f"+{data['added']} / -{data['deleted']}"
+        lines.append(f"| {user} | {data['commits']} | {changes_str} |")
+
+    lines.append("")
+    lines.append(f"**Team Totals:**")
+    lines.append(f"- Contributors: {len(team_stats)}")
+    lines.append(f"- Total Commits: {total_commits}")
+    lines.append(f"- Lines Added: +{total_added}")
+    lines.append(f"- Lines Deleted: -{total_deleted}")
+    
+    return "\n".join(lines)

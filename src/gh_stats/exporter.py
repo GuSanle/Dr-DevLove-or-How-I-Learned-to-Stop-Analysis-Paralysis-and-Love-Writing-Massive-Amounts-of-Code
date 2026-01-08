@@ -67,6 +67,104 @@ def generate_markdown(stats, since_date, until_date, full_message=False):
     
     return "\n".join(md)
 
+def generate_team_markdown(team_stats, since_date, until_date, group_by='user', full_message=False):
+    """
+    Generate markdown for team stats export.
+    
+    Args:
+        team_stats: dict {author: {commits, added, deleted, repos: {...}, messages: []}}
+        group_by: 'user' or 'repo'
+        full_message: Include full commit body
+    """
+    md = []
+    md.append(f"# Team Activity Report ({since_date} to {until_date})\n")
+    
+    if group_by == 'user':
+        # Group by user then repo
+        for user, data in sorted(team_stats.items(), key=lambda x: x[1]['commits'], reverse=True):
+            md.append(f"## {user}")
+            md.append(f"**Commits:** {data['commits']} | **Changes:** +{data['added']} / -{data['deleted']}\n")
+            
+            # Show repos breakdown
+            for repo, repo_data in sorted(data['repos'].items(), key=lambda x: x[1]['commits'], reverse=True):
+                md.append(f"### {repo}")
+                md.append(f"Commits: {repo_data['commits']} | +{repo_data['added']} / -{repo_data['deleted']}\n")
+            
+            # Messages for this user
+            if data['messages']:
+                md.append("#### Commits")
+                sorted_msgs = sorted(data['messages'], key=lambda x: x['date'], reverse=True)
+                for msg in sorted_msgs:
+                    date_str = msg['date'].strftime('%Y-%m-%d %H:%M')
+                    raw_lines = msg['message'].strip().split('\n')
+                    title = raw_lines[0].strip()
+                    md.append(f"- [{date_str}] ({msg['repo']}) {title}")
+                    
+                    if full_message and len(raw_lines) > 1:
+                        body_lines = raw_lines[1:]
+                        while body_lines and not body_lines[0].strip():
+                            body_lines.pop(0)
+                        if body_lines:
+                            for line in body_lines:
+                                escaped_line = line
+                                stripped = line.lstrip()
+                                if stripped.startswith('#'):
+                                    leading_ws = line[:len(line) - len(stripped)]
+                                    escaped_line = leading_ws + '\\' + stripped
+                                md.append(f"    {escaped_line}")
+            md.append("")
+    else:
+        # Group by repo then user
+        repo_user_map = {}  # {repo: {user: {commits, added, deleted, messages}}}
+        
+        for user, data in team_stats.items():
+            for repo, repo_data in data['repos'].items():
+                if repo not in repo_user_map:
+                    repo_user_map[repo] = {}
+                repo_user_map[repo][user] = {
+                    'commits': repo_data['commits'],
+                    'added': repo_data['added'],
+                    'deleted': repo_data['deleted'],
+                    'messages': [m for m in data['messages'] if m.get('repo') == repo]
+                }
+        
+        for repo in sorted(repo_user_map.keys()):
+            users_data = repo_user_map[repo]
+            total_commits = sum(u['commits'] for u in users_data.values())
+            total_added = sum(u['added'] for u in users_data.values())
+            total_deleted = sum(u['deleted'] for u in users_data.values())
+            
+            md.append(f"## {repo}")
+            md.append(f"**Total:** {total_commits} commits | +{total_added} / -{total_deleted}\n")
+            
+            for user, udata in sorted(users_data.items(), key=lambda x: x[1]['commits'], reverse=True):
+                md.append(f"### {user}")
+                md.append(f"Commits: {udata['commits']} | +{udata['added']} / -{udata['deleted']}")
+                
+                if udata['messages']:
+                    sorted_msgs = sorted(udata['messages'], key=lambda x: x['date'], reverse=True)
+                    for msg in sorted_msgs:
+                        date_str = msg['date'].strftime('%Y-%m-%d %H:%M')
+                        raw_lines = msg['message'].strip().split('\n')
+                        title = raw_lines[0].strip()
+                        md.append(f"- [{date_str}] {title}")
+                        
+                        if full_message and len(raw_lines) > 1:
+                            body_lines = raw_lines[1:]
+                            while body_lines and not body_lines[0].strip():
+                                body_lines.pop(0)
+                            if body_lines:
+                                for line in body_lines:
+                                    escaped_line = line
+                                    stripped = line.lstrip()
+                                    if stripped.startswith('#'):
+                                        leading_ws = line[:len(line) - len(stripped)]
+                                        escaped_line = leading_ws + '\\' + stripped
+                                    md.append(f"    {escaped_line}")
+                md.append("")
+    
+    return "\n".join(md)
+
 import os
 
 # Default directory for exported reports

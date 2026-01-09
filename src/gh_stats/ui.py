@@ -315,7 +315,7 @@ def print_highlights(highlights):
         
     if 'best_day' in highlights:
         b = highlights['best_day']
-        print(f"  🏆 {Colors.BOLD}Most Productive Day:{Colors.ENDC} {b['date']} ({c(b['commits'], Colors.CYAN)} commits)")
+        print(f"  🏆 {Colors.BOLD}Most Productive Day:{Colors.ENDC} {b['date']} ({c(b['changes'], Colors.CYAN)} lines changed, {b['commits']} commits)")
         
     if 'favorite_weekday' in highlights:
         w = highlights['favorite_weekday']

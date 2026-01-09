@@ -53,8 +53,8 @@ def scan_repositories(repos_to_scan, active_branches_map, username, since_date, 
                     except ValueError:
                         date_obj = datetime.datetime.combine(since_date, datetime.time.min)
                     
-                    # Always store date, optionally store message
-                    msg_entry = {'date': date_obj}
+                    # Always store date and stats, optionally store message
+                    msg_entry = {'date': date_obj, 'added': added, 'deleted': deleted}
                     if collect_messages:
                         message = commit_data.get('message', '')
                         msg_entry['message'] = message
@@ -127,8 +127,8 @@ def scan_org_team_stats(repos_to_scan, since_date, until_date, collect_messages=
                     except ValueError:
                         date_obj = datetime.datetime.combine(since_date, datetime.time.min)
                     
-                    # Always store date, optionally store message
-                    msg_entry = {'date': date_obj, 'repo': repo_full_name}
+                    # Always store date and stats, optionally store message
+                    msg_entry = {'date': date_obj, 'repo': repo_full_name, 'added': added, 'deleted': deleted}
                     if collect_messages:
                         message = commit_data.get('message', '')
                         msg_entry['message'] = message

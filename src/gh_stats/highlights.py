@@ -26,7 +26,9 @@ def generate_highlights(stats):
                 all_dates.append({
                     'date': msg['date'].date(),
                     'repo': repo,
-                    'datetime': msg['date']
+                    'datetime': msg['date'],
+                    'added': msg.get('added', 0),
+                    'deleted': msg.get('deleted', 0)
                 })
                 
     if not all_dates:
@@ -78,15 +80,19 @@ def generate_highlights(stats):
         }
 
     # 2. Most Productive Day
-    day_counts = defaultdict(int)
+    day_stats = defaultdict(lambda: {'commits': 0, 'changes': 0})
     for d in all_dates:
-        day_counts[d['date']] += 1
+        day_stats[d['date']]['commits'] += 1
+        day_stats[d['date']]['changes'] += (d['added'] + d['deleted'])
         
-    if day_counts:
-        best_day = max(day_counts.items(), key=lambda x: x[1])
+    if day_stats:
+        # Prioritize total changes over commit count
+        best_day = max(day_stats.items(), key=lambda x: x[1]['changes'])
+        
         highlights['best_day'] = {
             'date': best_day[0],
-            'commits': best_day[1]
+            'commits': best_day[1]['commits'],
+            'changes': best_day[1]['changes']
         }
 
     # 3. Favorite Weekday

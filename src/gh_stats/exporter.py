@@ -40,7 +40,7 @@ def generate_highlights_markdown(highlights):
         
     if 'best_day' in highlights:
         b = highlights['best_day']
-        md.append(f"- **🏆 Most Productive Day:** {b['date']} ({b['commits']} commits)")
+        md.append(f"- **🏆 Most Productive Day:** {b['date']} ({b['changes']} lines changed, {b['commits']} commits)")
         
     if 'favorite_weekday' in highlights:
         w = highlights['favorite_weekday']

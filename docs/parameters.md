@@ -33,8 +33,7 @@ gh-stats
 
 | 参数 | 类型 | 默认值 | 取值范围 | 说明 |
 |-----|------|--------|---------|------|
-| `--personal` | flag | `true` | - | 包含个人仓库 |
-| `--no-personal` | flag | - | - | 排除个人仓库 |
+| `--personal` / `--no-personal` | bool | `true` | `true` \| `false` | 是否包含个人仓库 |
 | `--orgs` | string | `""` | 逗号分隔的组织名 | 要分析的组织列表 |
 | `--personal-limit` | int | `null` | ≥0 (0=无限制) | 个人仓库扫描上限 |
 | `--org-limit` | int | `null` | ≥0 (0=无限制) | 每个组织仓库扫描上限 |

@@ -51,6 +51,8 @@ def is_noise_path(path: str, extra_markers: Iterable[str] = ()) -> bool:
     filename = normalized.rsplit("/", 1)[-1]
     if filename in NOISE_FILENAMES:
         return True
+    if filename.endswith(".min.js") or filename.endswith(".umd.js") or filename.endswith(".umd.min.js"):
+        return True
     markers = list(NOISE_DIR_MARKERS) + [m.lower() for m in extra_markers]
     wrapped = f"/{normalized}"
     for marker in markers:

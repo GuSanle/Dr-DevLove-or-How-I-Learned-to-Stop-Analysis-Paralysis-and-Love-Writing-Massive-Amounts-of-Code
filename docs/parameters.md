@@ -1,124 +1,125 @@
-# gh-stats 参数规格文档
+# gh-stats Parameter Specifications
 
-基于 [CLI 声明式参数架构协议](./myrules.md) 整理。
+Based on the [CLI Declarative Argument Architecture Protocol](./myrules.md).
 
 ---
 
-## 实体层级结构 (Entity Hierarchy)
+## Entity Hierarchy
 
 ```
 gh-stats
-├── E_USER          # 用户身份
-├── E_DISCOVERY     # 仓库发现
-├── E_DATE          # 日期范围
-├── E_EXPORT        # 导出控制
-├── E_ORG_SUMMARY   # 组织汇总模式
-│   └── E_ARENA     # 竞技场排名 (依赖 E_ORG_SUMMARY)
-└── E_DISPLAY       # 显示控制
+├── E_USER          # User Identity
+├── E_DISCOVERY     # Repository Discovery
+├── E_DATE          # Date Range
+├── E_EXPORT        # Export Control
+├── E_ORG_SUMMARY   # Organization Summary Mode
+│   └── E_ARENA     # Arena Rankings (Depends on E_ORG_SUMMARY)
+└── E_DISPLAY       # Display Control
 ```
 
 ---
 
-## 参数详细规格
+## Parameter Detailed Specifications
 
-### E_USER - 用户身份
+### E_USER - User Identity
 
-| 参数 | 类型 | 默认值 | 取值范围 | 说明 |
-|-----|------|--------|---------|------|
-| `--user` | string | (当前认证用户) | GitHub 用户名 | 目标分析用户 |
-
----
-
-### E_DISCOVERY - 仓库发现
-
-| 参数 | 类型 | 默认值 | 取值范围 | 说明 |
-|-----|------|--------|---------|------|
-| `--personal` / `--no-personal` | bool | `true` | `true` \| `false` | 是否包含个人仓库 |
-| `--orgs` | string | `""` | 逗号分隔的组织名 | 要分析的组织列表 |
-| `--personal-limit` | int | `null` | ≥0 (0=无限制) | 个人仓库扫描上限 |
-| `--org-limit` | int | `null` | ≥0 (0=无限制) | 每个组织仓库扫描上限 |
-| `--all-branches` | flag | `false` | - | 扫描所有活跃分支 |
+| Parameter | Type | Default | Value Range | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `--user` | string | (Current Auth User) | GitHub Username | Target user for analysis. |
 
 ---
 
-### E_DATE - 日期范围
+### E_DISCOVERY - Repository Discovery
 
-| 参数 | 类型 | 默认值 | 取值范围 | 说明 |
-|-----|------|--------|---------|------|
-| `--since` | string | `today` | 日期格式 (见下) | 开始日期 |
-| `--until` | string | `today` | 日期格式 (见下) | 结束日期 |
-| `--range` | string | `null` | 预设值 (见下) | 日期范围预设 |
-
-**日期格式**:
-- 绝对: `YYYY-MM-DD`, `YYYYMMDD`
-- 相对: `today`, `today-1week`, `today-3days`
-
-**Range 预设值**:
-- `today` — 今天
-- `week` — 本周
-- `month` — 本月
-- `3days`, `7days`, `30days` — 最近 N 天
+| Parameter | Type | Default | Value Range | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `--personal` / `--no-personal` | bool | `true` | `true` \| `false` | Include personal repositories. |
+| `--orgs` | string | `""` | Comma-separated org names | List of organizations to analyze. |
+| `--personal-limit` | int | `null` | ≥0 (0=unlimited) | Max personal repos to scan. |
+| `--org-limit` | int | `null` | ≥0 (0=unlimited) | Max repos per organization to scan. |
+| `--all-branches` | flag | `false` | - | Scan all active branches (via Events API). |
 
 ---
 
-### E_EXPORT - 导出控制
+### E_DATE - Date Range
 
-| 参数 | 类型 | 默认值 | 取值范围 | 说明 |
-|-----|------|--------|---------|------|
-| `--export-commits` | flag | `false` | - | 导出 commit 消息 |
-| `--full-message` | flag | `false` | - | 包含完整 commit body |
-| `--output`, `-o` | string | `null` | 文件路径 | 输出文件名 |
+| Parameter | Type | Default | Value Range | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `--since` | string | `today` | Date Format (see below) | Start date. |
+| `--until` | string | `today` | Date Format (see below) | End date. |
+| `--range` | string | `null` | Presets (see below) | Date range preset. |
 
----
+**Date Formats**:
+- Absolute: `YYYY-MM-DD`, `YYYYMMDD`
+- Relative: `today`, `today-1week`, `today-3days`
 
-### E_ORG_SUMMARY - 组织汇总模式
-
-| 参数 | 类型 | 默认值 | 取值范围 | 说明 |
-|-----|------|--------|---------|------|
-| `--org-summary` | string | `null` | 组织名 | 启用组织汇总模式 |
-
----
-
-### E_ARENA - 竞技场排名
-
-| 参数 | 类型 | 默认值 | 取值范围 | 说明 |
-|-----|------|--------|---------|------|
-| `--arena` | flag | `false` | - | 显示竞争排名 |
-| `--arena-top` | int | `5` | ≥0 (0=全部) | 排名显示人数 |
-
-**依赖关系**: `--arena` 需要 `--org-summary`
-
-**推导规则 (D)**: `--arena-top` 非默认值时自动激活 `--arena`
+**Range Presets**:
+- `today` — Today
+- `week` — This week
+- `month` — This month
+- `3days`, `7days`, `30days` — Last N days
 
 ---
 
-### E_DISPLAY - 显示控制
+### E_EXPORT - Export Control
 
-| 参数 | 类型 | 默认值 | 取值范围 | 说明 |
-|-----|------|--------|---------|------|
-| `--highlights` | flag | `false` | - | 显示亮点摘要 |
-| `--exclude-noise` | flag | `false` | - | 排除 lockfile 与生成物等杂质文件 |
-| `--dry-run` | flag | `false` | - | 诊断模式 |
-
----
-
-## 互斥约束 (X - Exclusions)
-
-| 约束 ID | 互斥参数组 | 说明 |
-|--------|-----------|------|
-| X001 | `--org-summary` ⟷ `--orgs` | 组织汇总模式与多组织模式互斥 |
+| Parameter | Type | Default | Value Range | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `--export-commits` | flag | `false` | - | Export commit messages to Markdown. |
+| `--full-message` | flag | `false` | - | Include full commit body in export. |
+| `--output`, `-o` | string | `null` | File path | Custom output filename. |
 
 ---
 
-## 推导规则 (D - Derivations)
+### E_ORG_SUMMARY - Organization Summary Mode
 
-| 规则 ID | 触发条件 | 推导结果 |
-|--------|---------|---------|
-| D001 | `--arena-top` ≠ 5 | 自动设置 `--arena = true` |
+| Parameter | Type | Default | Value Range | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `--org-summary` | string | `null` | Organization Name | Enable Org Summary Mode (Analyze single org). |
 
 ---
 
-## 依赖关系
+### E_ARENA - Arena Rankings
+
+| Parameter | Type | Default | Value Range | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `--arena` | flag | `false` | - | Show competition rankings. |
+| `--arena-top` | int | `5` | ≥0 (0=all) | Number of top contributors to show. |
+
+**Dependencies**: `--arena` requires `--org-summary`.
+
+**Derivation Rules (D)**: Valid `--arena-top` (non-default) automatically activates `--arena`.
+
+---
+
+### E_DISPLAY - Display Control
+
+| Parameter | Type | Default | Value Range | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `--highlights` | flag | `false` | - | Show insights (longest streak, etc.). |
+| `--exclude-noise` | flag | `false` | - | Exclude noisy files like lockfiles and generated artifacts. |
+| `--dry-run` | flag | `false` | - | Diagnostic mode (show params only). |
+| `--dev` | flag | `false` | - | Developer mode (print command & parsing details). |
+
+---
+
+## Mutually Exclusive Constraints (X - Exclusions)
+
+| Constraint ID | Mutually Exclusive Group | Description |
+| :--- | :--- | :--- |
+| X001 | `--org-summary` ⟷ `--orgs` | Org Summary Mode is mutually exclusive with Multi-Org Mode. |
+
+---
+
+## Derivation Rules (D - Derivations)
+
+| Rule ID | Trigger Condition | Derived Result |
+| :--- | :--- | :--- |
+| D001 | `--arena-top` ≠ 5 | Automatically sets `--arena = true` |
+
+---
+
+## Dependencies
 
 ```
 --arena ──requires──> --org-summary
@@ -126,10 +127,10 @@ gh-stats
 
 ---
 
-## 类型说明
+## Type definitions
 
-| 类型 | 格式 | 示例 |
-|-----|------|------|
-| `flag` | 布尔开关 | `--arena` |
-| `string` | 字符串 | `--user=octocat` |
-| `int` | 整数 | `--arena-top=10` |
+| Type | Format | Example |
+| :--- | :--- | :--- |
+| `flag` | Boolean Switch | `--arena` |
+| `string` | String | `--user=octocat` |
+| `int` | Integer | `--arena-top=10` |

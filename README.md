@@ -12,6 +12,9 @@ Are you tired of staring at a blank cursor? Do you suffer from chronic *Analysis
 
 **Dr. DevLove** (alias `gh-stats`) is your prescription. It's a CLI tool that proves you *are* getting work done. It validates your existence by tracking your daily code contributions across the GitHub universe, bypassing the need for local clones because who has disk space for that?
 
+> [!TIP]
+> **🤖 AI Agents:** detailed CLI architecture and parameter specifications are available in the [`docs/`](./docs/) directory. Use them to construct perfect commands.
+
 ---
 
 [English](./README.md) | [🇹🇼 繁體中文](./README.zh-TW.md)
@@ -99,6 +102,10 @@ poetry run gh-stats --range year --no-personal --org-limit 10
 | `--exclude-noise` | Exclude lockfiles and generated artifacts from stats | False |
 | `--dry-run` | Show parameter diagnostics without executing | False |
 | `--group-by` | Group export by `user` or `repo` (for `--org-users`) | `user` |
+| `--org-summary` | Analyze a single organization (mutually exclusive with `--orgs`) | - |
+| `--arena` | Show competition rankings (requires `--org-summary`) | False |
+| `--arena-top` | Number of top contributors to show in rankings (0=all) | 5 |
+| `--dev` | Developer mode: print command & parsing details | False |
 
 ### 📅 Advanced Usage
 

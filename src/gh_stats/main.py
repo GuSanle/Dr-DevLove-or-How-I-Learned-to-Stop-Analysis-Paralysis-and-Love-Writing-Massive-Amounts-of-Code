@@ -25,14 +25,24 @@ def main():
     args = parser.parse_args()
 
     # Dev mode: extensive diagnostics before execution
+    dev_report_header = ""
     if args.dev:
         print_styled("=== DEVELOPMENT MODE ===", Colors.HEADER, True)
         # Quote arguments if they contain spaces to make the command valid for copy-pasting
         quoted_argv = [f'"{arg}"' if ' ' in arg else arg for arg in sys.argv]
-        print(f"Command: {' '.join(quoted_argv)}\n")
+        command_line = f"Command: {' '.join(quoted_argv)}"
+        print(f"{command_line}\n")
         
         _, diag_result = parse_with_diagnostics()
-        print(format_diagnostics(diag_result))
+        diag_str = format_diagnostics(diag_result)
+        print(diag_str)
+        
+        # Prepare header for report
+        dev_report_header += f"# Development Diagnostics\n\n"
+        dev_report_header += f"**{command_line}**\n\n"
+        dev_report_header += "```text\n"
+        dev_report_header += diag_str
+        dev_report_header += "\n```\n\n---\n\n"
         
         if not diag_result.is_valid:
             print_styled("[X] Stopping execution due to configuration errors.", Colors.RED)
@@ -179,6 +189,10 @@ def main():
         if args.output:
             print_styled(f"\nGenerating org summary report...", Colors.CYAN)
             content = generate_org_summary_markdown(team_stats, since_date, until_date, org, args.arena, arena_top)
+            # Prepend dev diagnostics if available
+            if dev_report_header:
+                content = dev_report_header + content
+                
             filename = write_export_file(content, since_date, until_date, args.output)
             print(f"{Colors.GREEN}[OK]{Colors.ENDC} Exported org summary to: {filename}")
         else:
@@ -238,6 +252,10 @@ def main():
             parts.append(msg_content)
         
         final_content = "\n\n".join(parts)
+        
+        # Prepend dev diagnostics if available
+        if dev_report_header:
+            final_content = dev_report_header + final_content
         
         filename = write_export_file(final_content, since_date, until_date, args.output)
         print(f"{Colors.GREEN}[OK]{Colors.ENDC} Exported all data to: {filename}")

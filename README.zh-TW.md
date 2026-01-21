@@ -62,24 +62,24 @@ gh auth login
 gh auth refresh -s read:org
 ```
 
-### 2. 安裝 Poetry
+### 2. 安裝 uv
 
 ```bash
 # Windows (PowerShell)
-(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 # macOS / Linux
-curl -sSL https://install.python-poetry.org | python3 -
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 ### 3. 服藥
 
-複製這個名字超長的倉庫並使用 Poetry 安裝：
+複製這個名字超長的倉庫並使用 uv 安裝：
 
 ```bash
 git clone https://github.com/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code.git
 cd Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code
-poetry install
+uv sync --group dev
 ```
 
 ## 📋 劑量 (使用)
@@ -88,25 +88,25 @@ poetry install
 
 ```bash
 # 證明你今天工作了
-poetry run gh-stats --range today
+uv run gh-stats --range today
 
 # 查看昨天的工作
-poetry run gh-stats --range yesterday
+uv run gh-stats --range yesterday
 
 # 向老闆證明你這個月都在工作
-poetry run gh-stats --range thismonth --orgs YOUR_COMPANY_ORG
+uv run gh-stats --range thismonth --orgs YOUR_COMPANY_ORG
 
 # AI 總結神器 - 導出上週所有 commit message
-poetry run gh-stats --range lastweek --export-commits
+uv run gh-stats --range lastweek --export-commits
 
 # 導出完整版 commit message（包含正文）到指定檔案
-poetry run gh-stats --range lastweek --export-commits --full-message --output weekly_report
+uv run gh-stats --range lastweek --export-commits --full-message --output weekly_report
 
 # 圍觀大佬 - 查看其他用戶的公開倉庫活動
-poetry run gh-stats --user torvalds --range thismonth
+uv run gh-stats --user torvalds --range thismonth
 
 # 查看同事在組織內的貢獲
-poetry run gh-stats --user colleague_name --orgs YOUR_COMPANY_ORG --range lastweek
+uv run gh-stats --user colleague_name --orgs YOUR_COMPANY_ORG --range lastweek
 ```
 
 ### 參數
@@ -161,7 +161,7 @@ gh-stats --range lastweek --export-commits
 
 ```bash
 # 查看同事 alice 在 YOUR_COMPANY_ORG 組織內的貢獲
-poetry run gh-stats --user alice --orgs YOUR_COMPANY_ORG --range lastweek --export-commits
+uv run gh-stats --user alice --orgs YOUR_COMPANY_ORG --range lastweek --export-commits
 ```
 
 **注意**: 當組織倉庫超過 64 個時，程式會詢問您是否全部掃描，或輸入一個數量限制（倉庫按最近更新時間排序）。
@@ -173,7 +173,7 @@ poetry run gh-stats --user alice --orgs YOUR_COMPANY_ORG --range lastweek --expo
 
 ```bash
 # 指定檔案名導出
-poetry run gh-stats --range lastweek --export-commits --output my_weekly_report
+uv run gh-stats --range lastweek --export-commits --output my_weekly_report
 # 輸出: reports/my_weekly_report.md
 ```
 
@@ -181,7 +181,7 @@ poetry run gh-stats --range lastweek --export-commits --output my_weekly_report
 使用 `--highlights` 查看您的編碼模式洞察，包括最長連續提交天數、最高產的一天、最愛的工作日等。
 
 ```bash
-poetry run gh-stats --range month --highlights
+uv run gh-stats --range month --highlights
 ```
 
 **7. 👥 團隊模式（組織對比）**
@@ -189,10 +189,10 @@ poetry run gh-stats --range month --highlights
 
 ```bash
 # 查看 YOUR_COMPANY_ORG 本月所有貢獻者的對比
-poetry run gh-stats --orgs YOUR_COMPANY_ORG --org-users --range thismonth
+uv run gh-stats --orgs YOUR_COMPANY_ORG --org-users --range thismonth
 
 # 導出團隊統計，按倉庫分組（而非按用戶）
-poetry run gh-stats --orgs YOUR_COMPANY_ORG --org-users --range lastweek --output team_report --group-by repo
+uv run gh-stats --orgs YOUR_COMPANY_ORG --org-users --range lastweek --output team_report --group-by repo
 ```
 
 ## 📄 授權條款

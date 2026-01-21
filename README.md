@@ -43,12 +43,12 @@ gh auth refresh -s read:org
 ```
 
 ### 2. Take the Medicine
-Clone this massive repository and install with Poetry:
+Clone this massive repository and install with uv:
 
 ```bash
 git clone https://github.com/forestsheep911/Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code.git
 cd Dr-DevLove-or-How-I-Learned-to-Stop-Analysis-Paralysis-and-Love-Writing-Massive-Amounts-of-Code
-poetry install
+uv sync --group dev
 ```
 
 ## 📋 Dosage (Usage)
@@ -57,25 +57,25 @@ Run the tool to see your stats. Side effects may include a sudden sense of accom
 
 ```bash
 # Verify you did something today
-poetry run gh-stats --range today
+uv run gh-stats --range today
 
 # Prove to your boss you worked this month
-poetry run gh-stats --range month --orgs YOUR_COMPANY_ORG
+uv run gh-stats --range month --orgs YOUR_COMPANY_ORG
 
 # The "AI Summary Starter" - Export all commit messages from last week
-poetry run gh-stats --range lastweek --export-commits
+uv run gh-stats --range lastweek --export-commits
 
 # Export full commit messages (with body) to a custom file
-poetry run gh-stats --range lastweek --export-commits --full-message --output weekly_report
+uv run gh-stats --range lastweek --export-commits --full-message --output weekly_report
 
 # Stalk the legends - See another user's public repo activity
-poetry run gh-stats --user torvalds --range thismonth
+uv run gh-stats --user torvalds --range thismonth
 
 # See a teammate's contributions in your shared org
-poetry run gh-stats --user colleague --orgs YOUR_COMPANY_ORG --range lastweek
+uv run gh-stats --user colleague --orgs YOUR_COMPANY_ORG --range lastweek
 
 # The "I'm a 10x Engineer" view (Non-personal repos only, top 10)
-poetry run gh-stats --range year --no-personal --org-limit 10
+uv run gh-stats --range year --no-personal --org-limit 10
 ```
 
 ### Parameters
@@ -136,7 +136,7 @@ Use `--user` with `--orgs` to view a colleague's contributions in your shared or
 
 ```bash
 # View colleague alice's contributions in YOUR_COMPANY_ORG
-poetry run gh-stats --user alice --orgs YOUR_COMPANY_ORG --range lastweek --export-commits
+uv run gh-stats --user alice --orgs YOUR_COMPANY_ORG --range lastweek --export-commits
 ```
 
 **Note**: When org repos exceed 64, you'll be prompted to scan all or enter a limit (repos are sorted by most recently updated).
@@ -148,7 +148,7 @@ poetry run gh-stats --user alice --orgs YOUR_COMPANY_ORG --range lastweek --expo
 
 ```bash
 # Export with custom filename
-poetry run gh-stats --range lastweek --export-commits --output my_weekly_report
+uv run gh-stats --range lastweek --export-commits --output my_weekly_report
 # Output: reports/my_weekly_report.md
 ```
 
@@ -156,7 +156,7 @@ poetry run gh-stats --range lastweek --export-commits --output my_weekly_report
 Use `--highlights` to see insights about your coding patterns, including your longest streak, most productive day, and favorite weekday.
 
 ```bash
-poetry run gh-stats --range month --highlights
+uv run gh-stats --range month --highlights
 ```
 
 **7. 👥 Team Mode (Org-wide Comparison)**
@@ -164,10 +164,10 @@ Use `--org-users` to compare all contributors in an organization. This scans all
 
 ```bash
 # Compare all contributors in YOUR_COMPANY_ORG this month
-poetry run gh-stats --orgs YOUR_COMPANY_ORG --org-users --range thismonth
+uv run gh-stats --orgs YOUR_COMPANY_ORG --org-users --range thismonth
 
 # Export team stats grouped by repo instead of user
-poetry run gh-stats --orgs YOUR_COMPANY_ORG --org-users --range lastweek --output team_report --group-by repo
+uv run gh-stats --orgs YOUR_COMPANY_ORG --org-users --range lastweek --output team_report --group-by repo
 ```
 
 ## 🧪 Clinical Trials

@@ -13,13 +13,14 @@ dependencies = []
 gh-stats = "gh_stats.main:main"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
-packages = [{include = "gh_stats", from = "src"}]
+[tool.hatch.build.targets.wheel]
+packages = ["src/gh_stats"]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
-pytest-mock = "^3.15.1"
-
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock>=3.15.1",
+]
